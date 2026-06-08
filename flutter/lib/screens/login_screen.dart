@@ -59,11 +59,16 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   Future<void> _handleGoogleResult(Map<String, dynamic> result) async {
     setState(() { _loading = true; _error = null; });
     try {
-      final idToken = result['idToken'] as String?;
-      if (idToken == null || idToken.isEmpty) throw Exception('لا يوجد رمز توثيق');
+      final googleIdToken = result['idToken'] as String?;
+      if (googleIdToken == null || googleIdToken.isEmpty) throw Exception('لا يوجد رمز توثيق');
+
+      final credential = GoogleAuthProvider.credential(idToken: googleIdToken);
+      final userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+      final firebaseToken = await userCredential.user?.getIdToken();
+      if (firebaseToken == null || firebaseToken.isEmpty) throw Exception('فشل الحصول على رمز Firebase');
 
       final auth = context.read<app_auth.AuthProvider>();
-      final ok = await auth.loginWithGoogle(idToken);
+      final ok = await auth.loginWithFirebase(firebaseToken);
       if (mounted) {
         if (ok) {
           Navigator.pushReplacementNamed(context, '/home');
