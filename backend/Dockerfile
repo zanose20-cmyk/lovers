@@ -1,9 +1,9 @@
 FROM node:18-alpine
 WORKDIR /usr/src/app
 RUN apk add --no-cache wget
-COPY package.json package-lock.json* ./
+COPY backend/package.json backend/package-lock.json* ./
 RUN npm install --production
-COPY . .
+COPY backend/ .
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup && chown -R appuser:appgroup /usr/src/app
 USER appuser
 EXPOSE 3000
