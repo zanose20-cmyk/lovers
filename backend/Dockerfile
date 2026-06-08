@@ -2,7 +2,7 @@ FROM node:18-alpine
 WORKDIR /usr/src/app
 RUN apk add --no-cache wget
 COPY backend/package.json backend/package-lock.json* ./
-RUN npm install --production
+RUN npm install --production --legacy-peer-deps
 COPY backend/ .
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup && chown -R appuser:appgroup /usr/src/app
 USER appuser
