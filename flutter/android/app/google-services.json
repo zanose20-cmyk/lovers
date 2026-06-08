@@ -23,6 +23,14 @@
           }
         },
         {
+          "client_id": "364291041039-qh396vt74f3a8puj02hldn0aj7f8kpqk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.lovers_app",
+            "certificate_hash": "c217a8e40531be88ef821e168ceb0bc6db0fe3d8"
+          }
+        },
+        {
           "client_id": "364291041039-ru2cih28rmrh1gvctbv2ovosjq2nb98p.apps.googleusercontent.com",
           "client_type": 3
         }
