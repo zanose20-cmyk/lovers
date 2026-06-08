@@ -1,0 +1,42 @@
+﻿# =============================================
+# LOVERS APP — نشر على Railway
+# =============================================
+# 
+# الخطوات المطلوبة منك:
+#
+# 1. أنشئ حساب في https://railway.app (اشترك بـ GitHub)
+# 2. أنشئ New Project → Deploy from GitHub repo
+# 3. اختر الـ GitHub repo تبعك
+#    (إذا ما عندك GitHub repo، ارجع لي أسويلك اياه)
+#
+# =============================================
+# المتغيرات اللي تحتاج تظبطها في Railway Dashboard
+# =============================================
+# 
+# JWT_SECRET=YourSecretKey123
+# FIREBASE_PROJECT_ID=voice-rooms-app-f6216
+# FIREBASE_CLIENT_EMAIL=firebase-adminsdk-fbsvc@voice-rooms-app-f6216.iam.gserviceaccount.com
+# FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+# ADMIN_EMAIL=admin@lovers.app
+# ADMIN_PASSWORD=admin123
+#
+# (MongoDB و Redis يضافون تلقائياً كـ Plugins في Railway)
+#
+# =============================================
+# بعد النشر، يصير عندك رابط مثل:
+# https://lovers-backend.up.railway.app
+#
+# =============================================
+# SHA-1 اللي تحتاجه لـ Firebase Console:
+# C2:17:A8:E4:05:31:BE:88:EF:82:1E:16:8C:EB:0B:C6:DB:0F:E3:D8
+#
+# دخل Firebase Console → Project Settings → Add fingerprint
+# =============================================
+# 
+# بعد ما يشتغل الباك-اند:
+# cd D:\Lovers\flutter
+# flutter build apk --release --split-per-abi --dart-define=SERVER_URL=https://lovers-backend.up.railway.app
+#
+# الـ APK راح يكون في:
+# build\app\outputs\flutter-apk\app-arm64-v8a-release.apk
+# =============================================

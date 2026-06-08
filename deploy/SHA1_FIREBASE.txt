@@ -1,0 +1,4 @@
+﻿SHA-1 Fingerprint for Release APK:
+C2:17:A8:E4:05:31:BE:88:EF:82:1E:16:8C:EB:0B:C6:DB:0F:E3:D8
+
+Add this to Firebase Console → Project Settings → Your apps → Add fingerprint
