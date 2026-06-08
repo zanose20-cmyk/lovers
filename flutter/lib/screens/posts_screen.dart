@@ -1,0 +1,160 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../theme/app_theme.dart';
+import '../providers/posts_provider.dart';
+
+class PostsScreen extends StatefulWidget {
+  const PostsScreen({super.key});
+
+  @override
+  State<PostsScreen> createState() => _PostsScreenState();
+}
+
+class _PostsScreenState extends State<PostsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<PostsProvider>().loadPosts();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.backgroundDark,
+      appBar: AppBar(
+        title: const Text('المنشورات'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add_circle_outline),
+            onPressed: () => Navigator.pushNamed(context, '/create-post'),
+          ),
+        ],
+      ),
+      body: Consumer<PostsProvider>(
+        builder: (ctx, pp, _) {
+          if (pp.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (pp.posts.isEmpty) {
+            return const Center(child: Text('لا توجد منشورات', style: TextStyle(color: AppColors.textHint)));
+          }
+          return RefreshIndicator(
+            onRefresh: () => pp.loadPosts(),
+            color: AppColors.primary,
+            child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: pp.posts.length,
+            itemBuilder: (context, index) {
+              final post = pp.posts[index];
+              return Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: AppColors.backgroundCard,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 20,
+                            backgroundColor: AppColors.backgroundCardLight,
+                            backgroundImage: post.authorAvatar != null ? NetworkImage(post.authorAvatar!) as ImageProvider : null,
+                            child: post.authorAvatar == null ? const Icon(Icons.person, color: AppColors.textHint, size: 20) : null,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(post.authorName ?? '', style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 14)),
+                                if (post.createdAt != null)
+                                  Text(_timeAgo(post.createdAt!), style: const TextStyle(color: AppColors.textHint, fontSize: 11)),
+                              ],
+                            ),
+                          ),
+                          const Icon(Icons.more_horiz, color: AppColors.textHint, size: 20),
+                        ],
+                      ),
+                    ),
+                    if (post.content != null && post.content!.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text(post.content!, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14)),
+                      ),
+                    if (post.hashtags != null && post.hashtags!.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        child: Wrap(
+                          spacing: 6,
+                          children: post.hashtags!.map((h) => Text('#$h', style: const TextStyle(color: AppColors.primary, fontSize: 12))).toList(),
+                        ),
+                      ),
+                    const Divider(color: AppColors.backgroundCardLight, height: 1),
+                    Row(
+                      children: [
+                        _PostAction(
+                          icon: Icons.favorite_border,
+                          label: '${post.likesCount ?? 0}',
+                          onTap: () => pp.likePost(post.postId!),
+                        ),
+                        _PostAction(
+                          icon: Icons.chat_bubble_outline,
+                          label: '${post.commentsCount ?? 0}',
+                          onTap: () => pp.commentPost(post.postId!, ''),
+                        ),
+                        _PostAction(
+                          icon: Icons.share_outlined,
+                          label: '${post.sharesCount ?? 0}',
+                          onTap: () => pp.sharePost(post.postId!),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      },
+      ),
+    );
+  }
+
+  String _timeAgo(DateTime dt) {
+    final diff = DateTime.now().difference(dt);
+    if (diff.inMinutes < 60) return 'منذ ${diff.inMinutes} دقيقة';
+    if (diff.inHours < 24) return 'منذ ${diff.inHours} ساعة';
+    return 'منذ ${diff.inDays} يوم';
+  }
+}
+
+class _PostAction extends StatelessWidget {
+  final IconData icon; final String label; final VoidCallback onTap;
+  const _PostAction({required this.icon, required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: AppColors.textHint, size: 18),
+              const SizedBox(width: 4),
+              Text(label, style: const TextStyle(color: AppColors.textHint, fontSize: 12)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

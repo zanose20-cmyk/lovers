@@ -1,0 +1,99 @@
+{
+  "project_info": {
+    "project_number": "364291041039",
+    "firebase_url": "https://voice-rooms-app-f6216-default-rtdb.firebaseio.com",
+    "project_id": "voice-rooms-app-f6216",
+    "storage_bucket": "voice-rooms-app-f6216.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:364291041039:android:8d4c3977d9fb6af756407a",
+        "android_client_info": {
+          "package_name": "com.example.lovers_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "364291041039-kmm3bk714bpn5t5mfp2eiqgdfn8sd75f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.lovers_app",
+            "certificate_hash": "f489d58a564f506ff0d63873b8bf342c6e818691"
+          }
+        },
+        {
+          "client_id": "364291041039-ru2cih28rmrh1gvctbv2ovosjq2nb98p.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBbu6vvqSp0edZTn1RWfAObWyrblbRC8-k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "364291041039-ru2cih28rmrh1gvctbv2ovosjq2nb98p.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "364291041039-homg45psdn0vvaj6aaq03nb78595abr7.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.loversApp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:364291041039:android:f5be494a34ff2fe356407a",
+        "android_client_info": {
+          "package_name": "com.voicerooms.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "364291041039-tv4ghrifri9doesmadmjk1pgn38dh0hr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.voicerooms.app",
+            "certificate_hash": "f489d58a564f506ff0d63873b8bf342c6e818691"
+          }
+        },
+        {
+          "client_id": "364291041039-ru2cih28rmrh1gvctbv2ovosjq2nb98p.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBbu6vvqSp0edZTn1RWfAObWyrblbRC8-k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "364291041039-ru2cih28rmrh1gvctbv2ovosjq2nb98p.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "364291041039-homg45psdn0vvaj6aaq03nb78595abr7.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.loversApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

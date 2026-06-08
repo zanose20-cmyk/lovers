@@ -1,0 +1,3 @@
+-keep class com.example.lovers_app.** { *; }
+-keep class com.google.android.gms.** { *; }
+-keep class com.google.firebase.** { *; }

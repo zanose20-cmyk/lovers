@@ -1,0 +1,27 @@
+name: lovers_app
+description: Lovers — Voice chat app (Flutter skeleton)
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: '>=2.18.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^0.13.6
+  provider: ^6.0.5
+  firebase_core: ^2.19.0
+  firebase_auth: ^4.8.0
+  firebase_messaging: ^14.4.0
+  firebase_storage: ^11.0.0
+  socket_io_client: ^2.0.0
+  webview_flutter: ^4.4.1
+  shared_preferences: ^2.1.1
+  image_picker: ^1.1.2
+  # removed google_sign_in - using native method channel instead
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/

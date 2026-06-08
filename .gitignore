@@ -1,0 +1,21 @@
+# Flutter build
+flutter/build/
+flutter/.dart_tool/
+flutter/.packages
+flutter/.flutter-plugins*
+flutter/android/key.jks
+flutter/android/key.properties
+
+# Backend
+backend/node_modules/
+backend/.env
+backend/serviceAccountKey.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.iml

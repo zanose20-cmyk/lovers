@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: lovers-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: lovers
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - lovers-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: lovers-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - lovers-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: lovers-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      MONGO_URI: mongodb://mongodb:27017/lovers
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-change-this-to-a-random-secret}
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID}
+      FIREBASE_CLIENT_EMAIL: ${FIREBASE_CLIENT_EMAIL}
+      FIREBASE_PRIVATE_KEY: ${FIREBASE_PRIVATE_KEY}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@lovers.app}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+    depends_on:
+      - mongodb
+      - redis
+    volumes:
+      - backend_uploads:/app/uploads
+    networks:
+      - lovers-network
+
+  # Optional: Jitsi Meet (free voice engine)
+  # Uncomment and configure to self-host your voice engine
+  # See deploy/jitsi/README.md for details
+  # jitsi:
+  #   image: jitsi/web:latest
+  #   ...
+
+volumes:
+  mongodb_data:
+  redis_data:
+  backend_uploads:
+
+networks:
+  lovers-network:
+    driver: bridge
