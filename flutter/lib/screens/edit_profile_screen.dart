@@ -23,6 +23,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   int _age = 25;
   String _country = 'السعودية';
   String? _avatarUrl;
+  String? _coverUrl;
   bool _saving = false;
 
   @override
@@ -36,6 +37,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _ageController.text = _age.toString();
     _country = user?['country'] ?? 'السعودية';
     _avatarUrl = user?['avatarUrl'];
+    _coverUrl = user?['coverUrl'];
   }
 
   @override
@@ -61,6 +63,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
+  Future<void> _pickCoverImage() async {
+    final picker = ImagePicker();
+    final image = await picker.pickImage(source: ImageSource.gallery, maxWidth: 1200, maxHeight: 600);
+    if (image != null) {
+      try {
+        final bytes = await image.readAsBytes();
+        final fileName = 'cover_${DateTime.now().millisecondsSinceEpoch}.jpg';
+        final url = await FirebaseService().uploadFile('covers', fileName, bytes);
+        if (mounted) setState(() => _coverUrl = url);
+      } catch (_) {
+        if (mounted) setState(() => _coverUrl = image.path);
+      }
+    }
+  }
+
   Future<void> _save() async {
     if (_nameController.text.trim().isEmpty) return;
     setState(() => _saving = true);
@@ -75,6 +92,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       };
       if (_avatarUrl != null && _avatarUrl!.startsWith('http')) {
         body['avatarUrl'] = _avatarUrl;
+      }
+      if (_coverUrl != null && _coverUrl!.startsWith('http')) {
+        body['coverUrl'] = _coverUrl;
       }
       final resp = await api.put('/api/users/me', body: body);
       if (resp.statusCode == 200 && resp.data['ok'] == true && mounted) {
@@ -111,6 +131,39 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         child: Column(
           children: [
             const SizedBox(height: 20),
+            GestureDetector(
+              onTap: _pickCoverImage,
+              child: Container(
+                height: 160,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: AppColors.backgroundCardLight,
+                  borderRadius: BorderRadius.circular(16),
+                  image: _coverUrl != null && _coverUrl!.startsWith('http')
+                      ? DecorationImage(image: NetworkImage(_coverUrl!), fit: BoxFit.cover)
+                      : null,
+                ),
+                child: _coverUrl == null
+                    ? Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.photo_library_outlined, color: AppColors.textHint, size: 32),
+                          const SizedBox(height: 8),
+                          const Text('إضافة صورة غلاف', style: TextStyle(color: AppColors.textHint, fontSize: 13)),
+                        ],
+                      )
+                    : Align(
+                        alignment: Alignment.topRight,
+                        child: Container(
+                          margin: const EdgeInsets.all(8),
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+                          child: const Icon(Icons.camera_alt, size: 14, color: Colors.white),
+                        ),
+                      ),
+              ),
+            ),
+            const SizedBox(height: 8),
             GestureDetector(
               onTap: _pickImage,
               child: Stack(
