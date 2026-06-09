@@ -1,37 +1,54 @@
-const { initFirebase } = require('../services/firebaseAdmin');
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 const { v4: uuidv4 } = require('uuid');
+const https = require('https');
 
-initFirebase();
-
-async function firebaseLogin(req, res) {
+async function googleLogin(req, res) {
   const { idToken } = req.body;
   if (!idToken) return res.status(400).json({ error: 'idToken required' });
   try {
-    const admin = require('firebase-admin');
-    const decoded = await admin.auth().verifyIdToken(idToken);
+    const userData = await verifyGoogleToken(idToken);
 
-    // upsert user
     const data = {
-      uid: decoded.uid,
-      displayName: decoded.name || decoded.email || 'User',
-      email: decoded.email,
-      phoneNumber: decoded.phone_number,
-      avatarUrl: decoded.picture,
-      isVerified: decoded.email_verified || false,
+      uid: userData.sub,
+      displayName: userData.name || userData.email || 'User',
+      email: userData.email,
+      avatarUrl: userData.picture,
+      isVerified: userData.email_verified === 'true' || userData.email_verified === true,
     };
-    const user = await User.findOneAndUpdate({ uid: decoded.uid }, { $set: data }, { upsert: true, new: true });
+    const user = await User.findOneAndUpdate({ uid: userData.sub }, { $set: data }, { upsert: true, new: true });
 
-    // create server JWT
     const token = jwt.sign({ uid: user.uid, userId: user.userId, roles: user.roles }, config.jwtSecret, { expiresIn: config.jwtExpiresIn });
 
     return res.json({ token, user });
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: 'Firebase verification failed', details: err.message });
+    console.error('Google login error:', err.message);
+    return res.status(500).json({ error: 'Google verification failed', details: err.message });
   }
+}
+
+function verifyGoogleToken(token) {
+  return new Promise((resolve, reject) => {
+    const url = `https://oauth2.googleapis.com/tokeninfo?id_token=${token}`;
+    https.get(url, (response) => {
+      let data = '';
+      response.on('data', (chunk) => { data += chunk; });
+      response.on('end', () => {
+        if (response.statusCode !== 200) {
+          reject(new Error(`Google token verification failed with status ${response.statusCode}: ${data}`));
+        } else {
+          try {
+            resolve(JSON.parse(data));
+          } catch (e) {
+            reject(new Error('Failed to parse Google token response'));
+          }
+        }
+      });
+    }).on('error', (err) => {
+      reject(err);
+    });
+  });
 }
 
 async function createGuest(req, res) {
@@ -108,4 +125,4 @@ async function revokeDevice(req, res) {
   }
 }
 
-module.exports = { firebaseLogin, createGuest, registerDevice, listDevices, revokeDevice };
+module.exports = { googleLogin, createGuest, registerDevice, listDevices, revokeDevice };

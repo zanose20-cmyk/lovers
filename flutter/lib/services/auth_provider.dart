@@ -32,7 +32,7 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
     try {
       final api = ApiService(AppConfig.serverUrl);
-      final response = await api.post('/api/auth/firebase', body: {'idToken': idToken});
+      final response = await api.post('/api/auth/google', body: {'idToken': idToken});
       if (response.statusCode == 200) {
         _token = response.data['token'] as String;
         _user = response.data['user'] as Map<String, dynamic>;
@@ -45,30 +45,6 @@ class AuthProvider extends ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Google login error: $e');
-    }
-    _isLoading = false;
-    notifyListeners();
-    return false;
-  }
-
-  Future<bool> loginWithFirebase(String idToken) async {
-    _isLoading = true;
-    notifyListeners();
-    try {
-      final api = ApiService(AppConfig.serverUrl);
-      final response = await api.post('/api/auth/firebase', body: {'idToken': idToken});
-      if (response.statusCode == 200) {
-        _token = response.data['token'] as String;
-        _user = response.data['user'] as Map<String, dynamic>;
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('server_token', _token!);
-        await prefs.setString('user_data', jsonEncode(_user));
-        _isLoading = false;
-        notifyListeners();
-        return true;
-      }
-    } catch (e) {
-      debugPrint('Firebase login error: $e');
     }
     _isLoading = false;
     notifyListeners();

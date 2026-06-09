@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { firebaseLogin, createGuest, registerDevice, listDevices, revokeDevice } = require('../controllers/authController');
+const { googleLogin, createGuest, registerDevice, listDevices, revokeDevice } = require('../controllers/authController');
 const { requireAuth } = require('../middleware/authMiddleware');
 
-router.post('/firebase', firebaseLogin);
+router.post('/google', googleLogin);
 router.post('/guest', createGuest);
 router.post('/devices/register', requireAuth, registerDevice);
 router.get('/devices', requireAuth, listDevices);
