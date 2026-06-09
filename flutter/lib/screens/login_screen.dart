@@ -312,6 +312,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                         onPressed: _loading ? null : _signInAsGuest,
                         child: const Text('الدخول كضيف', style: TextStyle(color: AppColors.textHint, fontSize: 14)),
                       ),
+                      TextButton(
+                        onPressed: () => Navigator.pushNamed(context, '/recovery'),
+                        child: const Text('نسيت كلمة المرور؟', style: TextStyle(color: AppColors.primary, fontSize: 13)),
+                      ),
                     ],
                   ),
                 ),

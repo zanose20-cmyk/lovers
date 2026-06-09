@@ -6,6 +6,7 @@ import 'config/app_config.dart';
 import 'services/api_service.dart';
 import 'services/auth_provider.dart';
 import 'screens/login_screen.dart';
+import 'screens/account_recovery_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
 
@@ -119,6 +120,7 @@ class LoversApp extends StatelessWidget {
           '/splash': (ctx) => const SplashScreen(),
           '/onboarding': (ctx) => const OnboardingScreen(),
           '/login': (ctx) => const LoginScreen(),
+          '/recovery': (ctx) => const AccountRecoveryScreen(),
           '/home': (ctx) => const HomeScreen(),
           '/profile': (ctx) => ProfileScreen(userId: settings.arguments as String?),
           '/edit-profile': (ctx) => const EditProfileScreen(),
