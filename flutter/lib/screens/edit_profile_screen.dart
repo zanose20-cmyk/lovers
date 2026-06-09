@@ -17,6 +17,7 @@ class EditProfileScreen extends StatefulWidget {
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final _nameController = TextEditingController();
   final _bioController = TextEditingController();
+  final _ageController = TextEditingController();
   String _gender = 'male';
   int _age = 25;
   String _country = 'السعودية';
@@ -31,6 +32,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _bioController.text = user?['bio'] ?? '';
     _gender = user?['gender'] ?? 'male';
     _age = user?['age'] ?? 25;
+    _ageController.text = _age.toString();
     _country = user?['country'] ?? 'السعودية';
     _avatarUrl = user?['avatarUrl'];
   }
@@ -39,6 +41,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void dispose() {
     _nameController.dispose();
     _bioController.dispose();
+    _ageController.dispose();
     super.dispose();
   }
 
@@ -136,7 +139,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              initialValue: _country,
+              value: _country,
               dropdownColor: AppColors.backgroundCard,
               decoration: const InputDecoration(
                 labelText: 'الدولة',
@@ -152,7 +155,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              initialValue: _gender,
+              value: _gender,
               dropdownColor: AppColors.backgroundCard,
               decoration: const InputDecoration(
                 labelText: 'الجنس',
@@ -180,7 +183,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               keyboardType: TextInputType.number,
               style: const TextStyle(color: AppColors.textPrimary),
-              controller: TextEditingController(text: _age.toString()),
+              controller: _ageController,
               onChanged: (v) => _age = int.tryParse(v) ?? 25,
             ),
           ],

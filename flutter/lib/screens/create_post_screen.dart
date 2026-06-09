@@ -35,15 +35,21 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   Future<void> _publish() async {
     if (_contentController.text.trim().isEmpty) return;
     setState(() => _posting = true);
-    final pp = context.read<PostsProvider>();
-    final post = await pp.createPost(_contentController.text.trim(), hashtags: _hashtags);
-    if (post != null && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم نشر المنشور')));
-      Navigator.pop(context);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('فشل النشر')));
+    try {
+      final pp = context.read<PostsProvider>();
+      final post = await pp.createPost(_contentController.text.trim(), hashtags: _hashtags);
+      if (post != null && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم نشر المنشور')));
+        Navigator.pop(context);
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('فشل النشر')));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('خطأ في الاتصال')));
+      }
     }
-    setState(() => _posting = false);
+    if (mounted) setState(() => _posting = false);
   }
 
   @override

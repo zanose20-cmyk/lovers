@@ -107,7 +107,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Voice Chat Experience',
+                  'تجربة المحادثة الصوتية',
                   style: TextStyle(
                     fontSize: 14,
                     color: AppColors.textSecondary,

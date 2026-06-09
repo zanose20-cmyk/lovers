@@ -130,8 +130,9 @@ class _MessagesScreenState extends State<MessagesScreen> {
 
   String _timeAgo(DateTime dt) {
     final diff = DateTime.now().difference(dt);
-    if (diff.inMinutes < 60) return '${diff.inMinutes}:00 ${dt.hour < 12 ? 'ص' : 'م'}';
-    if (diff.inHours < 24) return '${diff.inHours} ساعة';
-    return '${dt.day}/${dt.month}';
+    if (diff.inMinutes < 60) return 'منذ ${diff.inMinutes} دقيقة';
+    if (diff.inHours < 24) return 'منذ ${diff.inHours} ساعة';
+    if (diff.inDays < 7) return 'منذ ${diff.inDays} يوم';
+    return '${dt.day}/${dt.month}/${dt.year}';
   }
 }

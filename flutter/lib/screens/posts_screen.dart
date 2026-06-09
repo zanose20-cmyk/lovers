@@ -106,7 +106,7 @@ class _PostsScreenState extends State<PostsScreen> {
                         _PostAction(
                           icon: Icons.chat_bubble_outline,
                           label: '${post.commentsCount ?? 0}',
-                          onTap: () => pp.commentPost(post.postId!, ''),
+                          onTap: () => _showCommentDialog(context, post.postId!),
                         ),
                         _PostAction(
                           icon: Icons.share_outlined,
@@ -131,6 +131,36 @@ class _PostsScreenState extends State<PostsScreen> {
     if (diff.inMinutes < 60) return 'منذ ${diff.inMinutes} دقيقة';
     if (diff.inHours < 24) return 'منذ ${diff.inHours} ساعة';
     return 'منذ ${diff.inDays} يوم';
+  }
+
+  void _showCommentDialog(BuildContext context, String postId) {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.backgroundCard,
+        title: const Text('إضافة تعليق', style: TextStyle(color: AppColors.textPrimary)),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          style: const TextStyle(color: AppColors.textPrimary),
+          decoration: const InputDecoration(hintText: 'اكتب تعليقاً...', hintStyle: TextStyle(color: AppColors.textHint)),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('إلغاء', style: TextStyle(color: AppColors.textHint))),
+          TextButton(
+            onPressed: () {
+              final text = controller.text.trim();
+              if (text.isNotEmpty) {
+                context.read<PostsProvider>().commentPost(postId, text);
+              }
+              Navigator.pop(ctx);
+            },
+            child: const Text('إرسال', style: TextStyle(color: AppColors.primary)),
+          ),
+        ],
+      ),
+    ).then((_) => controller.dispose());
   }
 }
 

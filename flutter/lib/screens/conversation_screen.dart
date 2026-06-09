@@ -30,14 +30,31 @@ class _ConversationScreenState extends State<ConversationScreen> {
     super.dispose();
   }
 
-  void _sendMessage() {
+  Future<void> _sendMessage() async {
     final text = _messageController.text.trim();
     if (text.isEmpty) return;
-    context.read<MessagesProvider>().sendMessage(widget.userId, text);
     _messageController.clear();
-    Future.delayed(const Duration(milliseconds: 100), () {
-      _scrollController.animateTo(_scrollController.position.maxScrollExtent, duration: const Duration(milliseconds: 200), curve: Curves.easeOut);
-    });
+    try {
+      final ok = await context.read<MessagesProvider>().sendMessage(widget.userId, text);
+      if (!ok && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('فشل إرسال الرسالة')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('خطأ في الاتصال')),
+        );
+      }
+    }
+    if (mounted) {
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (_scrollController.hasClients) {
+          _scrollController.animateTo(_scrollController.position.maxScrollExtent, duration: const Duration(milliseconds: 200), curve: Curves.easeOut);
+        }
+      });
+    }
   }
 
   @override
@@ -68,7 +85,6 @@ class _ConversationScreenState extends State<ConversationScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(userName, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                    const Text('متصل الآن', style: TextStyle(fontSize: 11, color: AppColors.success)),
                   ],
                 );
               },
@@ -78,19 +94,29 @@ class _ConversationScreenState extends State<ConversationScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.phone, color: AppColors.success),
-            onPressed: () => Navigator.pushNamed(context, '/voice-room', arguments: {
-              'server': 'https://meet.jit.si',
-              'roomName': 'chat_${widget.userId}',
-              'displayName': 'User',
-            }),
+            onPressed: () {
+              final mp = context.read<MessagesProvider>();
+              final conv = mp.conversations.where((c) => c.user?['userId'] == widget.userId).firstOrNull;
+              final userName = conv?.user?['displayName'] ?? 'مستخدم';
+              Navigator.pushNamed(context, '/voice-room', arguments: {
+                'server': 'https://meet.jit.si',
+                'roomName': 'chat_${widget.userId}',
+                'displayName': userName,
+              });
+            },
           ),
           IconButton(
             icon: const Icon(Icons.videocam, color: AppColors.primary),
-            onPressed: () => Navigator.pushNamed(context, '/jitsi-room', arguments: {
-              'server': 'https://meet.jit.si',
-              'roomName': 'video_${widget.userId}',
-              'displayName': 'User',
-            }),
+            onPressed: () {
+              final mp = context.read<MessagesProvider>();
+              final conv = mp.conversations.where((c) => c.user?['userId'] == widget.userId).firstOrNull;
+              final userName = conv?.user?['displayName'] ?? 'مستخدم';
+              Navigator.pushNamed(context, '/jitsi-room', arguments: {
+                'server': 'https://meet.jit.si',
+                'roomName': 'video_${widget.userId}',
+                'displayName': userName,
+              });
+            },
           ),
         ],
       ),

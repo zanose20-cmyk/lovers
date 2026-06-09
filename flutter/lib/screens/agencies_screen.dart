@@ -83,7 +83,11 @@ class _AgenciesScreenState extends State<AgenciesScreen> {
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: GestureDetector(
-                            onTap: () => ap.joinAgency(agency.agencyId!),
+                            onTap: () {
+                              if (agency.agencyId != null) {
+                                ap.joinAgency(agency.agencyId!);
+                              }
+                            },
                             child: const Text('انضمام', style: TextStyle(color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.bold)),
                           ),
                         ),

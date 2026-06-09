@@ -15,7 +15,7 @@ class VoiceRoomScreen extends StatefulWidget {
   VoiceRoomScreen({
     required this.server,
     required this.roomName,
-    this.displayName = 'User',
+    this.displayName = 'مستخدم',
     this.email,
     this.jwtToken,
   });

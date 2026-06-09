@@ -26,15 +26,21 @@ class _CreateAgencyScreenState extends State<CreateAgencyScreen> {
   Future<void> _create() async {
     if (_nameController.text.trim().isEmpty) return;
     setState(() => _creating = true);
-    final ap = context.read<AgenciesProvider>();
-    final agency = await ap.createAgency(_nameController.text.trim(), description: _descController.text.trim());
-    if (agency != null && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم إنشاء الوكالة')));
-      Navigator.pop(context);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('فشل الإنشاء')));
+    try {
+      final ap = context.read<AgenciesProvider>();
+      final agency = await ap.createAgency(_nameController.text.trim(), description: _descController.text.trim());
+      if (agency != null && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم إنشاء الوكالة')));
+        Navigator.pop(context);
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('فشل الإنشاء')));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('خطأ في الاتصال')));
+      }
     }
-    setState(() => _creating = false);
+    if (mounted) setState(() => _creating = false);
   }
 
   @override

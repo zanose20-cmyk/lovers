@@ -15,6 +15,16 @@ class _VIPScreenState extends State<VIPScreen> {
   List<VIPLevelModel> _levels = [];
   bool _loading = true;
 
+  Color _parseColor(String? colorStr, {Color fallback = AppColors.gold}) {
+    if (colorStr == null || colorStr.isEmpty) return fallback;
+    try {
+      final hex = colorStr.replaceFirst('#', '').padLeft(6, '0');
+      return Color(int.parse('FF$hex', radix: 16));
+    } catch (_) {
+      return fallback;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -68,9 +78,7 @@ class _VIPScreenState extends State<VIPScreen> {
                   if (_levels.isNotEmpty)
                     Builder(builder: (ctx) {
                       final vip = _levels.first;
-                      final vipColor = vip.color != null && vip.color!.startsWith('#')
-                          ? Color(int.parse('FF${vip.color!.substring(1)}', radix: 16))
-                          : AppColors.gold;
+                      final vipColor = _parseColor(vip.color);
                       return Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(24),
@@ -111,7 +119,7 @@ class _VIPScreenState extends State<VIPScreen> {
                     level: vip.level ?? 0,
                     name: vip.name ?? '',
                     price: vip.priceCoins ?? 0,
-                    color: vip.color != null ? Color(int.parse('FF${vip.color!.substring(1)}', radix: 16)) : AppColors.gold,
+                    color: _parseColor(vip.color),
                     isCurrent: false,
                     isLocked: true,
                   )),

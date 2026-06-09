@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class SocketService {
@@ -10,8 +11,8 @@ class SocketService {
       'extraHeaders': {'Authorization': 'Bearer $token'}
     });
 
-    socket?.on('connect', (_) => print('socket connected'));
-    socket?.on('disconnect', (_) => print('socket disconnected'));
+    socket?.on('connect', (_) => debugPrint('socket connected'));
+    socket?.on('disconnect', (_) => debugPrint('socket disconnected'));
 
     // re-register handlers if any
     _handlers.forEach((event, list) {

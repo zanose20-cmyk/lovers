@@ -31,23 +31,28 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
     }
     setState(() => _isCreating = true);
 
-    final rp = context.read<RoomsProvider>();
-    final room = await rp.createRoom({
-      'title': _titleController.text.trim(),
-      'type': _roomType,
-      if (_roomType == 'private') 'password': _passwordController.text,
-      'capacity': _capacity,
-      'maxCapacity': _capacity,
-    });
+    try {
+      final rp = context.read<RoomsProvider>();
+      final room = await rp.createRoom({
+        'title': _titleController.text.trim(),
+        'type': _roomType,
+        if (_roomType == 'private') 'password': _passwordController.text,
+        'capacity': _capacity,
+        'maxCapacity': _capacity,
+      });
 
-    setState(() => _isCreating = false);
-
-    if (room != null && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('تم إنشاء الغرفة ${_titleController.text}')));
-      Navigator.pushNamed(context, '/room', arguments: room.roomId);
-    } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('فشل إنشاء الغرفة')));
+      if (room != null && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('تم إنشاء الغرفة ${_titleController.text}')));
+        Navigator.pushNamed(context, '/room', arguments: room.roomId);
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('فشل إنشاء الغرفة')));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('خطأ في الاتصال')));
+      }
     }
+    if (mounted) setState(() => _isCreating = false);
   }
 
   @override

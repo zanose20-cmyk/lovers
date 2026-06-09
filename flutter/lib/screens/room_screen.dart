@@ -41,7 +41,7 @@ class _RoomScreenState extends State<RoomScreen> {
         Navigator.pushNamed(context, '/jitsi-room', arguments: {
           'server': voiceAccess['server'],
           'roomName': voiceAccess['roomName'],
-          'displayName': auth.user?['displayName'] ?? 'User',
+          'displayName': auth.user?['displayName'] ?? 'مستخدم',
           'token': auth.token,
         });
       }

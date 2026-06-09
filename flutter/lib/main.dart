@@ -101,7 +101,6 @@ class LoversApp extends StatelessWidget {
           '/splash': (ctx) => const SplashScreen(),
           '/onboarding': (ctx) => const OnboardingScreen(),
           '/login': (ctx) => const LoginScreen(),
-
           '/home': (ctx) => const HomeScreen(),
           '/profile': (ctx) => ProfileScreen(userId: settings.arguments as String?),
           '/edit-profile': (ctx) => const EditProfileScreen(),
@@ -113,7 +112,7 @@ class LoversApp extends StatelessWidget {
             return JitsiRoomScreen(
               serverUrl: args['server'] as String,
               roomName: args['roomName'] as String,
-              displayName: args['displayName'] as String? ?? 'User',
+              displayName: args['displayName'] as String? ?? 'مستخدم',
               token: args['token'] as String?,
             );
           },
@@ -139,14 +138,14 @@ class LoversApp extends StatelessWidget {
               return VoiceRoomScreen(
                 server: args['server'] as String? ?? 'https://meet.jit.si',
                 roomName: args['roomName'] as String,
-                displayName: args['displayName'] as String? ?? 'User',
+                displayName: args['displayName'] as String? ?? 'مستخدم',
                 email: args['email'] as String?,
                 jwtToken: args['token'] as String?,
               );
             }
             return VoiceRoomScreen(
               server: 'https://meet.jit.si',
-              roomName: args as String? ?? 'room',
+              roomName: args as String? ?? 'غرفة',
             );
           },
         };

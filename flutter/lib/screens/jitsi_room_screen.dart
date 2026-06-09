@@ -14,7 +14,7 @@ class JitsiRoomScreen extends StatefulWidget {
   JitsiRoomScreen({
     required this.serverUrl,
     required this.roomName,
-    this.displayName = 'User',
+    this.displayName = 'مستخدم',
     this.token,
   });
 
