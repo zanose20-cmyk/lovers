@@ -24,10 +24,10 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file("../key.jks")
-            storePassword = "android"
-            keyAlias = "upload"
-            keyPassword = "android"
+            storeFile = file("production.jks")
+            storePassword = "lovers2025"
+            keyAlias = "lovers"
+            keyPassword = "lovers2025"
         }
     }
 
