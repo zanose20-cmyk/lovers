@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../theme/app_theme.dart';
 import '../providers/posts_provider.dart';
+import '../providers/api_provider.dart';
 import '../services/auth_provider.dart';
 
 class PostsScreen extends StatefulWidget {
@@ -185,6 +186,31 @@ class _PostsScreenState extends State<PostsScreen> {
                           icon: Icons.share_outlined,
                           label: '${post.sharesCount ?? 0}',
                           onTap: () { if (post.postId != null) pp.sharePost(post.postId!); },
+                        ),
+                        Consumer<AuthProvider>(
+                          builder: (_, auth, __) {
+                            final myId = auth.user?['userId'] as String?;
+                            if (post.authorId == null || post.authorId == myId) return const SizedBox.shrink();
+                            final isFollowing = myId != null && (post.followers ?? []).contains(myId);
+                            return _PostAction(
+                              icon: isFollowing ? Icons.person_remove_alt_1 : Icons.person_add_alt_1,
+                              label: isFollowing ? 'متابعة' : 'تابع',
+                              iconColor: isFollowing ? AppColors.error : null,
+                              onTap: () async {
+                                if (post.authorId == null) return;
+                                final api = context.read<ApiProvider>().api;
+                                final resp = isFollowing
+                                    ? await api.unfollowUser(post.authorId!)
+                                    : await api.followUser(post.authorId!);
+                                if (resp.statusCode == 200) {
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(isFollowing ? 'تم إلغاء المتابعة' : 'تم المتابعة')));
+                                    pp.loadPosts();
+                                  }
+                                }
+                              },
+                            );
+                          },
                         ),
                       ],
                     ),

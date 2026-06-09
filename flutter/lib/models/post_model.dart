@@ -67,6 +67,8 @@ class PostModel {
   List<String>? mentions;
   List<String>? likes;
   int? likesCount;
+  List<String>? followers;
+  int? followersCount;
   List<PostComment>? comments;
   int? commentsCount;
   int? sharesCount;
@@ -86,6 +88,8 @@ class PostModel {
     this.mentions,
     this.likes,
     this.likesCount,
+    this.followers,
+    this.followersCount,
     this.comments,
     this.commentsCount,
     this.sharesCount,
@@ -106,6 +110,8 @@ class PostModel {
         mentions: json['mentions'] != null ? List<String>.from(json['mentions']) : null,
         likes: json['likes'] != null ? List<String>.from(json['likes']) : null,
         likesCount: json['likesCount'],
+        followers: json['followers'] != null ? List<String>.from(json['followers']) : null,
+        followersCount: json['followersCount'],
         comments: json['comments'] != null ? (json['comments'] as List).map((e) => PostComment.fromJson(e)).toList() : null,
         commentsCount: json['commentsCount'],
         sharesCount: json['sharesCount'],
@@ -126,6 +132,8 @@ class PostModel {
         'mentions': mentions,
         'likes': likes,
         'likesCount': likesCount,
+        'followers': followers,
+        'followersCount': followersCount,
         'comments': comments?.map((e) => e.toJson()).toList(),
         'commentsCount': commentsCount,
         'sharesCount': sharesCount,

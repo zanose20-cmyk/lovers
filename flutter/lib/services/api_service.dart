@@ -72,6 +72,9 @@ class ApiService {
     }
   }
 
+  Future<ApiResponse> followUser(String userId) => post('/api/users/$userId/follow');
+  Future<ApiResponse> unfollowUser(String userId) => post('/api/users/$userId/unfollow');
+
   ApiResponse _parseResponse(http.Response response) {
     try {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
