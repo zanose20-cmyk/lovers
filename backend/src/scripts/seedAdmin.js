@@ -3,7 +3,7 @@ const config = require('../config');
 const User = require('../models/User');
 
 async function seed() {
-  await mongoose.connect(config.mongoUri, { useNewUrlParser: true, useUnifiedTopology: true });
+  await mongoose.connect(config.mongoUri);
   console.log('Connected to MongoDB for seeding admin');
 
   const email = process.env.ADMIN_EMAIL || 'admin@example.com';

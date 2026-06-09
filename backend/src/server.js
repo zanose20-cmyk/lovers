@@ -43,6 +43,7 @@ async function start() {
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
   logger.error('Unhandled Rejection:', err);
+  setTimeout(() => process.exit(1), 2000);
 });
 
 process.on('uncaughtException', (err) => {

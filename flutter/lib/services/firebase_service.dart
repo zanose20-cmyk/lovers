@@ -31,10 +31,14 @@ class FirebaseService {
   }
 
   Future<void> subscribeToTopic(String topic) async {
-    await messaging.subscribeToTopic(topic);
+    try {
+      await messaging.subscribeToTopic(topic);
+    } catch (_) {}
   }
 
   Future<void> unsubscribeFromTopic(String topic) async {
-    await messaging.unsubscribeFromTopic(topic);
+    try {
+      await messaging.unsubscribeFromTopic(topic);
+    } catch (_) {}
   }
 }

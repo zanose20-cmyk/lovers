@@ -54,8 +54,9 @@ async function cleanup() {
 
     // 4. Clean up old daily progress (older than 7 days)
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const cutoffDate = sevenDaysAgo.toISOString().split('T')[0];
     const progressResult = await UserDailyProgress.deleteMany({
-      date: { $lt: sevenDaysAgo }
+      date: { $lt: cutoffDate }
     });
     logger.info(`✅ Old daily progress cleaned: ${progressResult.deletedCount}`);
 
