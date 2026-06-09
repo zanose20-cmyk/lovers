@@ -153,7 +153,8 @@ async function updateTaskProgress(req, res) {
     const taskProgress = progress.tasks.find(t => t.taskId === taskId);
     if (!taskProgress) return res.status(404).json({ error: 'Task not found' });
     
-    taskProgress.progress += increment;
+    const safeIncrement = Math.min(Math.max(parseInt(increment) || 1, 1), 100);
+    taskProgress.progress += safeIncrement;
     if (taskProgress.progress >= taskProgress.target) {
       taskProgress.completed = true;
     }

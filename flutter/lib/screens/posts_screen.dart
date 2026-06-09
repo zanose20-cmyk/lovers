@@ -88,11 +88,12 @@ class _PostsScreenState extends State<PostsScreen> {
                         child: Text(post.content!, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14)),
                       ),
                     if (post.hashtags != null && post.hashtags!.isNotEmpty)
+                    if (post.hashtags != null && (post.hashtags ?? []).isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         child: Wrap(
                           spacing: 6,
-                          children: post.hashtags!.map((h) => Text('#$h', style: const TextStyle(color: AppColors.primary, fontSize: 12))).toList(),
+                          children: (post.hashtags ?? []).map((h) => Text('#$h', style: const TextStyle(color: AppColors.primary, fontSize: 12))).toList(),
                         ),
                       ),
                     const Divider(color: AppColors.backgroundCardLight, height: 1),

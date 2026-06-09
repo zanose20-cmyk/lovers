@@ -11,6 +11,8 @@ async function createPost(req, res) {
     const user = await User.findOne({ userId: userPayload.userId });
     if (!user) return res.status(404).json({ error: 'User not found' });
     
+    const safeContent = typeof content === 'string' ? content.trim().slice(0, 5000) : '';
+    
     // Extract hashtags from content if not provided
     let tags = hashtags || [];
     if (content) {
@@ -22,7 +24,7 @@ async function createPost(req, res) {
       authorId: user.userId,
       authorName: user.displayName,
       authorAvatar: user.avatarUrl,
-      content,
+      content: safeContent,
       media: media || [],
       hashtags: tags
     });
@@ -115,6 +117,8 @@ async function commentOnPost(req, res) {
     const { content } = req.body;
     
     if (!content) return res.status(400).json({ error: 'Content required' });
+    const safeComment = typeof content === 'string' ? content.trim().slice(0, 1000) : '';
+    if (!safeComment) return res.status(400).json({ error: 'Content required' });
     
     const post = await Post.findOne({ postId });
     if (!post) return res.status(404).json({ error: 'Post not found' });
@@ -125,7 +129,7 @@ async function commentOnPost(req, res) {
       userId,
       displayName: user.displayName,
       avatarUrl: user.avatarUrl,
-      content
+      content: safeComment
     });
     
     await post.save();

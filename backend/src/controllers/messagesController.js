@@ -9,6 +9,8 @@ async function sendPrivateMessage(req, res) {
     const { toUserId, type = 'text', content, attachments } = req.body;
     
     if (!toUserId || !content) return res.status(400).json({ error: 'toUserId and content required' });
+    const safeContent = typeof content === 'string' ? content.trim().slice(0, 5000) : '';
+    if (!safeContent) return res.status(400).json({ error: 'Content required' });
     
     const receiver = await User.findOne({ userId: toUserId });
     if (!receiver) return res.status(404).json({ error: 'User not found' });
@@ -18,7 +20,7 @@ async function sendPrivateMessage(req, res) {
       fromUserId,
       toUserId,
       type,
-      content,
+      content: safeContent,
       attachments: attachments || []
     });
     
@@ -147,12 +149,14 @@ async function editMessage(req, res) {
     const { content } = req.body;
     
     if (!content) return res.status(400).json({ error: 'Content required' });
+    const safeEdit = typeof content === 'string' ? content.trim().slice(0, 5000) : '';
+    if (!safeEdit) return res.status(400).json({ error: 'Content required' });
     
     const message = await Message.findOne({ messageId });
     if (!message) return res.status(404).json({ error: 'Message not found' });
     if (message.fromUserId !== userId) return res.status(403).json({ error: 'Not your message' });
     
-    message.content = content;
+    message.content = safeEdit;
     await message.save();
     
     res.json({ ok: true, message });

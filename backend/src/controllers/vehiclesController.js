@@ -64,7 +64,13 @@ async function buyVehicle(req, res) {
 
 async function createVehicle(req, res) {
   try {
-    const vehicle = new Vehicle(req.body);
+    const body = req.body || {};
+    const allowedFields = ['sku', 'name', 'type', 'description', 'priceCoins', 'priceDiamonds', 'durationDays', 'isActive', 'imageUrl', 'meta'];
+    const data = {};
+    for (const f of allowedFields) {
+      if (body[f] !== undefined) data[f] = body[f];
+    }
+    const vehicle = new Vehicle(data);
     await vehicle.save();
     res.json({ ok: true, vehicle });
   } catch (err) {
@@ -76,7 +82,13 @@ async function createVehicle(req, res) {
 async function updateVehicle(req, res) {
   try {
     const { sku } = req.params;
-    const vehicle = await Vehicle.findOneAndUpdate({ sku }, { $set: req.body }, { new: true });
+    const body = req.body || {};
+    const allowedFields = ['name', 'type', 'description', 'priceCoins', 'priceDiamonds', 'durationDays', 'isActive', 'imageUrl', 'meta'];
+    const updates = {};
+    for (const f of allowedFields) {
+      if (body[f] !== undefined) updates[f] = body[f];
+    }
+    const vehicle = await Vehicle.findOneAndUpdate({ sku }, { $set: updates }, { new: true });
     if (!vehicle) return res.status(404).json({ error: 'Vehicle not found' });
     res.json({ ok: true, vehicle });
   } catch (err) {

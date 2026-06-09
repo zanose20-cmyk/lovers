@@ -134,7 +134,7 @@ class _SettingsSwitch extends StatelessWidget {
               ],
             ),
           ),
-          Switch(value: value, onChanged: onChanged, activeThumbColor: AppColors.primary),
+          Switch(value: value, onChanged: onChanged, thumbColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? AppColors.primary : null)),
         ],
       ),
     );

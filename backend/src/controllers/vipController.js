@@ -131,9 +131,15 @@ async function createVIPLevel(req, res) {
 async function updateVIPLevel(req, res) {
   try {
     const { level } = req.params;
+    const body = req.body || {};
+    const allowedFields = ['name', 'priceCoins', 'priceDiamonds', 'durationDays', 'isActive', 'perks', 'badge', 'meta'];
+    const updates = {};
+    for (const f of allowedFields) {
+      if (body[f] !== undefined) updates[f] = body[f];
+    }
     const vip = await VIPLevel.findOneAndUpdate(
       { level: parseInt(level) },
-      { $set: req.body },
+      { $set: updates },
       { new: true }
     );
     if (!vip) return res.status(404).json({ error: 'VIP level not found' });

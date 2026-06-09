@@ -116,7 +116,7 @@ async function updateUser(req, res) {
     const updates = req.body;
     const adminId = req.user.userId;
     
-    const allowedFields = ['roles', 'isVerified', 'level', 'chargeLevel', 'activityLevel', 'personalBadge', 'specialBadges', 'banned'];
+    const allowedFields = ['roles', 'isVerified', 'level', 'chargeLevel', 'activityLevel', 'personalBadge', 'specialBadges', 'banned', 'banReason'];
     const filtered = {};
     for (const field of allowedFields) {
       if (updates[field] !== undefined) filtered[field] = updates[field];
