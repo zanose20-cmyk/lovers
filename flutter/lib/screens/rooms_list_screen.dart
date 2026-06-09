@@ -54,10 +54,25 @@ class _RoomsListScreenState extends State<RoomsListScreen> with SingleTickerProv
       ),
       body: Consumer<RoomsProvider>(
         builder: (ctx, rp, _) {
-          if (rp.isLoading) {
+          if (rp.isLoading && rp.rooms.isEmpty) {
             return const Center(child: CircularProgressIndicator());
           }
-          return _RoomList(rooms: rp.rooms);
+          if (rp.error != null && rp.rooms.isEmpty) {
+            return Center(
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
+                const Icon(Icons.error_outline, color: AppColors.error, size: 48),
+                const SizedBox(height: 12),
+                Text('حدث خطأ: ${rp.error}', style: const TextStyle(color: AppColors.textHint)),
+                const SizedBox(height: 12),
+                ElevatedButton(onPressed: () => rp.loadRooms(type: 'public'), child: const Text('إعادة المحاولة')),
+              ]),
+            );
+          }
+          return RefreshIndicator(
+            onRefresh: () => rp.loadRooms(type: ['public', 'private', 'vip', 'agency'][_tabController.index]),
+            color: AppColors.primary,
+            child: _RoomList(rooms: rp.rooms),
+          );
         },
       ),
       floatingActionButton: FloatingActionButton(

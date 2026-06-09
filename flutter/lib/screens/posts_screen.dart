@@ -34,11 +34,22 @@ class _PostsScreenState extends State<PostsScreen> {
       ),
       body: Consumer<PostsProvider>(
         builder: (ctx, pp, _) {
-          if (pp.isLoading) {
+          if (pp.isLoading && pp.posts.isEmpty) {
             return const Center(child: CircularProgressIndicator());
           }
+          if (pp.error != null && pp.posts.isEmpty) {
+            return Center(
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
+                const Icon(Icons.error_outline, color: AppColors.error, size: 48),
+                const SizedBox(height: 12),
+                Text('حدث خطأ', style: const TextStyle(color: AppColors.textHint)),
+                const SizedBox(height: 12),
+                ElevatedButton(onPressed: () => pp.loadPosts(), child: const Text('إعادة المحاولة')),
+              ]),
+            );
+          }
           if (pp.posts.isEmpty) {
-            return const Center(child: Text('لا توجد منشورات', style: TextStyle(color: AppColors.textHint)));
+            return const Center(child: Text('لا توجد منشورات بعد', style: TextStyle(color: AppColors.textHint)));
           }
           return RefreshIndicator(
             onRefresh: () => pp.loadPosts(),

@@ -127,7 +127,17 @@ class _ConversationScreenState extends State<ConversationScreen> {
               Expanded(
                 child: mp.isLoading
                     ? const Center(child: CircularProgressIndicator())
-                    : ListView.builder(
+                    : mp.messages.isEmpty
+                        ? const Center(
+                            child: Column(mainAxisSize: MainAxisSize.min, children: [
+                              Icon(Icons.chat_bubble_outline, color: AppColors.textHint, size: 48),
+                              SizedBox(height: 12),
+                              Text('لا توجد رسائل بعد', style: TextStyle(color: AppColors.textHint, fontSize: 16)),
+                              SizedBox(height: 4),
+                              Text('ابدأ المحادثة الآن!', style: TextStyle(color: AppColors.textHint, fontSize: 12)),
+                            ]),
+                          )
+                        : ListView.builder(
                         controller: _scrollController,
                         padding: const EdgeInsets.all(16),
                         itemCount: mp.messages.length,
