@@ -6,6 +6,7 @@ const {
   createGuest,
   requestRecovery, verifyRecovery,
   registerDevice, listDevices, revokeDevice,
+  publicSeedVIP,
 } = require('../controllers/authController');
 const { requireAuth } = require('../middleware/authMiddleware');
 
@@ -20,5 +21,7 @@ router.post('/recovery/verify', verifyRecovery);
 router.post('/devices/register', requireAuth, registerDevice);
 router.get('/devices', requireAuth, listDevices);
 router.post('/devices/revoke', requireAuth, revokeDevice);
+
+router.post('/seed-vip', publicSeedVIP);
 
 module.exports = router;
