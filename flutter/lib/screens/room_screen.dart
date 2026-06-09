@@ -105,6 +105,62 @@ class _RoomScreenState extends State<RoomScreen> {
     super.dispose();
   }
 
+  void _kickUser(String userId) {
+    _socketService.emit('admin:kick', {'roomId': widget.roomId, 'userId': userId});
+  }
+
+  void _banUser(String userId) {
+    _socketService.emit('admin:ban', {'roomId': widget.roomId, 'userId': userId});
+  }
+
+  void _muteUser(String userId, bool muted) {
+    _socketService.emit('seat:mute', {'roomId': widget.roomId, 'userId': userId, muted: !muted});
+  }
+
+  void _showAdminMenu(String targetUserId, String displayName, bool isMuted) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.backgroundCard,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(width: 40, height: 4, margin: const EdgeInsets.only(top: 12), decoration: BoxDecoration(color: AppColors.textHint, borderRadius: BorderRadius.circular(2))),
+            const SizedBox(height: 16),
+            Text(displayName, style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: Icon(isMuted ? Icons.mic : Icons.mic_off, color: isMuted ? AppColors.success : AppColors.error),
+              title: Text(isMuted ? 'إلغاء الكتم' : 'كتم الصوت'),
+              onTap: () {
+                Navigator.pop(ctx);
+                _muteUser(targetUserId, isMuted);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.person_remove, color: AppColors.error),
+              title: const Text('طرد من الغرفة', style: TextStyle(color: AppColors.error)),
+              onTap: () {
+                Navigator.pop(ctx);
+                _kickUser(targetUserId);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.block, color: AppColors.error),
+              title: const Text('حظر من الغرفة', style: TextStyle(color: AppColors.error)),
+              onTap: () {
+                Navigator.pop(ctx);
+                _banUser(targetUserId);
+              },
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -114,6 +170,10 @@ class _RoomScreenState extends State<RoomScreen> {
       );
     }
 
+    final auth = context.read<AuthProvider>();
+    final isOwner = _room?.ownerId == auth.user?['userId'];
+    final isAdmin = (auth.user?['roles'] as List?)?.contains('admin') == true;
+    final canManage = isOwner || isAdmin;
     final seats = _room?.seats ?? [];
     return Scaffold(
       backgroundColor: AppColors.backgroundDark,
@@ -159,12 +219,18 @@ class _RoomScreenState extends State<RoomScreen> {
                 itemBuilder: (context, index) {
                   final seat = index < seats.length ? seats[index] : null;
                   final isOccupied = seat?.userId != null;
-                  return _SeatWidget(
-                    seatIndex: index,
-                    displayName: seat?.displayName,
-                    isOccupied: isOccupied,
-                    isMuted: seat?.isMuted ?? false,
-                    isLocked: seat?.isLocked ?? false,
+                  final isSeatMuted = seat?.isMuted ?? false;
+                  return GestureDetector(
+                    onLongPress: (canManage && isOccupied && seat?.userId != null && seat?.userId != auth.user?['userId'])
+                        ? () => _showAdminMenu(seat!.userId!, seat.displayName ?? 'مستخدم', isSeatMuted)
+                        : null,
+                    child: _SeatWidget(
+                      seatIndex: index,
+                      displayName: seat?.displayName,
+                      isOccupied: isOccupied,
+                      isMuted: isSeatMuted,
+                      isLocked: seat?.isLocked ?? false,
+                    ),
                   );
                 },
               ),

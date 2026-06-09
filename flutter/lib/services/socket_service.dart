@@ -58,6 +58,10 @@ class SocketService {
     socket?.emit('roomMessage', payload);
   }
 
+  void emit(String event, [dynamic data]) {
+    socket?.emit(event, data);
+  }
+
   void dispose() {
     _connected = false;
     try { socket?.disconnect(); } catch (e) {}
