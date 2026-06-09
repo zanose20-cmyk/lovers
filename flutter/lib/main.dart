@@ -41,6 +41,7 @@ import 'screens/admin_gifts_screen.dart';
 import 'screens/badge_shop_screen.dart';
 import 'screens/post_comments_screen.dart';
 import 'screens/blocked_list_screen.dart';
+import 'screens/delete_account_screen.dart';
 import 'services/firebase_service.dart';
 import 'services/notification_service.dart';
 import 'providers/api_provider.dart';
@@ -192,6 +193,7 @@ class LoversApp extends StatelessWidget {
           '/badge-shop': (ctx) => const BadgeShopScreen(),
           '/post-comments': (ctx) => PostCommentsScreen(postId: (ModalRoute.of(ctx)!.settings.arguments as Map)['postId']),
           '/blocked': (ctx) => const BlockedListScreen(),
+          '/delete-account': (ctx) => const DeleteAccountScreen(),
         };
 
         final builder = routes[settings.name];

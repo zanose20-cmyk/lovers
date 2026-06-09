@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../services/auth_provider.dart';
 import '../theme/app_theme.dart';
 import '../providers/api_provider.dart';
+import '../providers/messages_provider.dart';
 import '../services/api_service.dart';
 import '../config/app_config.dart';
 import '../widgets/report_dialog.dart';
@@ -21,11 +22,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _isFollowing = false;
   bool _isOwner = true;
   bool _loading = false;
+  bool _isOnline = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadProfile());
+    _listenOnlineStatus();
+  }
+
+  void _listenOnlineStatus() {
+    final socket = context.read<MessagesProvider>().socketService;
+    socket.on('user:online', (data) {
+      if (mounted && _profile != null && data['userId'] == _profile!['userId']) {
+        setState(() => _isOnline = true);
+      }
+    });
+    socket.on('user:offline', (data) {
+      if (mounted && _profile != null && data['userId'] == _profile!['userId']) {
+        setState(() => _isOnline = false);
+      }
+    });
   }
 
   Future<void> _loadProfile() async {
@@ -194,6 +211,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(name, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+                if (_isOnline) ...[
+                  const SizedBox(width: 6),
+                  Container(
+                    width: 8, height: 8,
+                    decoration: const BoxDecoration(color: AppColors.success, shape: BoxShape.circle),
+                  ),
+                ],
                 if (vipLevel > 0) ...[
                   const SizedBox(width: 8),
                   Container(

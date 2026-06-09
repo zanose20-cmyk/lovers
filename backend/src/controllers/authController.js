@@ -304,6 +304,47 @@ async function revokeDevice(req, res) {
   }
 }
 
+async function deleteAccount(req, res) {
+  try {
+    const { password } = req.body;
+    const userPayload = req.user;
+    if (!password) return res.status(400).json({ error: 'Password required' });
+    
+    const User = require('../models/User');
+    const bcrypt = require('bcryptjs');
+    const user = await User.findOne({ userId: userPayload.userId });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) return res.status(401).json({ error: 'كلمة المرور غير صحيحة' });
+    
+    // Delete related data
+    const Room = require('../models/Room');
+    const Message = require('../models/Message');
+    const Post = require('../models/Post');
+    const Gift = require('../models/Gift');
+    const Transaction = require('../models/Transaction');
+    const VIPSubscription = require('../models/VIPSubscription');
+    const Agency = require('../models/Agency');
+    
+    await Promise.all([
+      Room.deleteMany({ ownerId: user.userId }),
+      Message.deleteMany({ $or: [{ fromUserId: user.userId }, { toUserId: user.userId }] }),
+      Post.deleteMany({ userId: user.userId }),
+      Gift.deleteMany({ $or: [{ fromUserId: user.userId }, { toUserId: user.userId }] }),
+      Transaction.deleteMany({ userId: user.userId }),
+      VIPSubscription.deleteMany({ userId: user.userId }),
+      Agency.deleteMany({ ownerId: user.userId }),
+      User.deleteOne({ userId: user.userId }),
+    ]);
+    
+    res.json({ ok: true, message: 'Account deleted' });
+  } catch (err) {
+    console.error('deleteAccount error', err);
+    res.status(500).json({ error: 'Failed to delete account' });
+  }
+}
+
 async function publicSeedVIP(req, res) {
   try {
     const { secretKey } = req.body;
@@ -339,5 +380,6 @@ module.exports = {
   createGuest,
   requestRecovery, verifyRecovery,
   registerDevice, listDevices, revokeDevice,
+  deleteAccount,
   publicSeedVIP,
 };
