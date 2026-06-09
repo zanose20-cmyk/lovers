@@ -15,7 +15,19 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
   final _passwordController = TextEditingController();
   String _roomType = 'public';
   int _capacity = 12;
+  String? _selectedBackground;
   bool _isCreating = false;
+
+  static const _backgrounds = [
+    {'key': 'default', 'label': 'افتراضي', 'color': 0xFF1A1A2E},
+    {'key': 'vip_gold', 'label': 'VIP ذهبي', 'color': 0xFFFFD700},
+    {'key': 'dark_blue', 'label': 'أزرق داكن', 'color': 0xFF0F3460},
+    {'key': 'purple', 'label': 'بنفسجي', 'color': 0xFF6A0DAD},
+    {'key': 'red', 'label': 'أحمر', 'color': 0xFF8B0000},
+    {'key': 'green', 'label': 'أخضر', 'color': 0xFF006400},
+    {'key': 'neon_pink', 'label': 'وردي نيون', 'color': 0xFFFF10F0},
+    {'key': 'neon_blue', 'label': 'أزرق نيون', 'color': 0xFF00FFFF},
+  ];
 
   @override
   void dispose() {
@@ -39,6 +51,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
         if (_roomType == 'private') 'password': _passwordController.text,
         'capacity': _capacity,
         'maxCapacity': _capacity,
+        if (_selectedBackground != null && _selectedBackground != 'default') 'background': _selectedBackground,
       });
 
       if (room != null && room.roomId != null && mounted) {
@@ -104,6 +117,46 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
                   ),
                 );
               }).toList(),
+            ),
+            const SizedBox(height: 16),
+            const Text('خلفية الغرفة', style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: 80,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: _backgrounds.length,
+                itemBuilder: (ctx, i) {
+                  final bg = _backgrounds[i];
+                  final isSelected = _selectedBackground == bg['key'];
+                  return GestureDetector(
+                    onTap: () => setState(() => _selectedBackground = isSelected ? null : bg['key'] as String),
+                    child: Container(
+                      width: 70,
+                      margin: const EdgeInsets.only(right: 10),
+                      decoration: BoxDecoration(
+                        color: Color(bg['color'] as int),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isSelected ? AppColors.primary : Colors.transparent,
+                          width: 3,
+                        ),
+                      ),
+                      child: Center(
+                        child: Text(
+                          bg['label'] as String,
+                          style: TextStyle(
+                            color: bg['key'] == 'vip_gold' || bg['key'] == 'neon_blue' ? Colors.black : Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 11,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
             if (_roomType == 'private') ...[
               const SizedBox(height: 16),

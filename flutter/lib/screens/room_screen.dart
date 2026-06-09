@@ -25,6 +25,35 @@ class _RoomScreenState extends State<RoomScreen> {
   final _socketService = SocketService();
   final Map<String, bool> _onlineUsers = {};
 
+  Color _getRoomBackgroundColor() {
+    switch (_room?.background) {
+      case 'vip_gold': return const Color(0xFFFFD700);
+      case 'dark_blue': return const Color(0xFF0F3460);
+      case 'purple': return const Color(0xFF6A0DAD);
+      case 'red': return const Color(0xFF8B0000);
+      case 'green': return const Color(0xFF006400);
+      case 'neon_pink': return const Color(0xFFFF10F0);
+      case 'neon_blue': return const Color(0xFF00FFFF);
+      default: return AppColors.backgroundDark;
+    }
+  }
+
+  BoxDecoration? _getRoomBackgroundDecoration() {
+    final bg = _room?.background;
+    if (bg == null || bg == 'default') return null;
+    return BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          _getRoomBackgroundColor().withValues(alpha: 0.15),
+          _getRoomBackgroundColor().withValues(alpha: 0.05),
+          AppColors.backgroundDark,
+        ],
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -259,11 +288,11 @@ class _RoomScreenState extends State<RoomScreen> {
     return Scaffold(
       backgroundColor: AppColors.backgroundDark,
       body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
                 children: [
                   IconButton(
                     icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),

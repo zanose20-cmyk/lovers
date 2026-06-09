@@ -5,6 +5,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../config/app_config.dart';
 import '../services/socket_service.dart';
+import '../services/sound_service.dart';
 
 class VoiceRoomScreen extends StatefulWidget {
   final String server;
@@ -214,6 +215,8 @@ class _VoiceRoomScreenState extends State<VoiceRoomScreen> {
   void _onGiftReceived(dynamic payload) {
     if (!mounted || payload is! Map) return;
     try {
+      final giftKey = (payload['gift'] ?? '').toString().toLowerCase();
+      SoundService().playGiftSound(giftKey);
       setState(() {
         _currentGift = Map<String, dynamic>.from(payload);
         _showGiftOverlay = true;
