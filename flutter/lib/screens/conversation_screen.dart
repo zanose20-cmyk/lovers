@@ -19,6 +19,8 @@ class _ConversationScreenState extends State<ConversationScreen> {
   final _messageController = TextEditingController();
   final _scrollController = ScrollController();
   final _picker = ImagePicker();
+  bool _isTyping = false;
+  DateTime? _lastTypingTime;
 
   @override
   void initState() {
@@ -26,6 +28,19 @@ class _ConversationScreenState extends State<ConversationScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<MessagesProvider>().setCurrentChatUser(widget.userId);
       context.read<MessagesProvider>().loadMessages(widget.userId);
+      
+      final socket = context.read<MessagesProvider>().socketService;
+      socket.on('typing:start', (data) {
+        if (mounted && data['userId'] == widget.userId) {
+          setState(() => _isTyping = true);
+          _startTypingTimeout();
+        }
+      });
+      socket.on('typing:stop', (data) {
+        if (mounted && data['userId'] == widget.userId) {
+          setState(() => _isTyping = false);
+        }
+      });
     });
   }
 
@@ -35,6 +50,24 @@ class _ConversationScreenState extends State<ConversationScreen> {
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _startTypingTimeout() {
+    _lastTypingTime = DateTime.now();
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted && _lastTypingTime != null && DateTime.now().difference(_lastTypingTime!).inSeconds >= 3) {
+        setState(() => _isTyping = false);
+      }
+    });
+  }
+
+  void _onTyping() {
+    if (!_isTyping) {
+      setState(() => _isTyping = true);
+    }
+    _lastTypingTime = DateTime.now();
+    context.read<MessagesProvider>().socketService.emit('typing:start', {'toUserId': widget.userId});
+    _startTypingTimeout();
   }
 
   Future<void> _sendImage() async {
@@ -118,6 +151,8 @@ class _ConversationScreenState extends State<ConversationScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(userName, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                    if (_isTyping)
+                      Text('يكتب...', style: const TextStyle(fontSize: 11, color: AppColors.primary)),
                   ],
                 );
               },
@@ -243,6 +278,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
                     Expanded(
                       child: TextField(
                         controller: _messageController,
+                        onChanged: (_) => _onTyping(),
                         decoration: InputDecoration(
                           hintText: 'اكتب رسالة...',
                           hintStyle: const TextStyle(color: AppColors.textHint),

@@ -6,7 +6,7 @@ const {
   followUser, unfollowUser, getFollowers, getFollowing,
   addFriend, getNotifications, markNotificationRead, markAllNotificationsRead,
   getUserVIPStatus,
-  blockUser, unblockUser, isBlocked,
+  blockUser, unblockUser, isBlocked, getBlockedList,
   uploadFileHandler,
 } = require('../controllers/usersController');
 const { requireAuth } = require('../middleware/authMiddleware');
@@ -27,6 +27,7 @@ router.post('/:userId/friend', requireAuth, addFriend);
 router.post('/:userId/block', requireAuth, blockUser);
 router.post('/:userId/unblock', requireAuth, unblockUser);
 router.get('/:userId/is-blocked', requireAuth, isBlocked);
+router.get('/me/blocked', requireAuth, getBlockedList);
 
 router.get('/:userId/vip', getUserVIPStatus);
 

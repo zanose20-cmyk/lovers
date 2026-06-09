@@ -19,6 +19,7 @@ class MessagesProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   int get unreadCount => _conversations.fold(0, (sum, c) => sum + (c.unread ?? 0));
+  SocketService get socketService => _socket;
 
   void listenForMessages(String myUserId) {
     _socket.on('privateMessage', (data) {

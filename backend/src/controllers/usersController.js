@@ -392,6 +392,22 @@ async function isBlocked(req, res) {
   }
 }
 
+async function getBlockedList(req, res) {
+  try {
+    const currentUserId = req.user.userId;
+    const user = await User.findOne({ userId: currentUserId }).select('blockedUsers').lean();
+    const blockedIds = user?.blockedUsers || [];
+    if (blockedIds.length === 0) return res.json({ blocked: [] });
+    const users = await User.find({ userId: { $in: blockedIds } })
+      .select('userId displayName avatarUrl country')
+      .lean();
+    res.json({ blocked: users });
+  } catch (err) {
+    logger.error('getBlockedList error', err);
+    res.status(500).json({ error: 'Failed to get blocked list' });
+  }
+}
+
 // ==================== FILE UPLOAD ====================
 async function uploadFileHandler(req, res) {
   try {
@@ -443,6 +459,7 @@ module.exports = {
   blockUser,
   unblockUser,
   isBlocked,
+  getBlockedList,
   uploadFileHandler,
   sendPushNotification,
 };

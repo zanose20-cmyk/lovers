@@ -15,6 +15,7 @@ class RoomsListScreen extends StatefulWidget {
 class _RoomsListScreenState extends State<RoomsListScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   String? _selectedCountry;
+  String? _searchQuery;
   static const _countries = ['', 'السعودية', 'مصر', 'الإمارات', 'الكويت', 'قطر', 'البحرين', 'عمان', 'الأردن', 'العراق', 'لبنان'];
 
   @override
@@ -57,6 +58,22 @@ class _RoomsListScreenState extends State<RoomsListScreen> with SingleTickerProv
       ),
       body: Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+            child: TextField(
+              onChanged: (v) => setState(() => _searchQuery = v.trim().isEmpty ? null : v.trim()),
+              decoration: InputDecoration(
+                hintText: 'ابحث عن غرفة...',
+                hintStyle: const TextStyle(color: AppColors.textHint, fontSize: 13),
+                prefixIcon: const Icon(Icons.search, color: AppColors.textHint, size: 20),
+                filled: true,
+                fillColor: AppColors.backgroundCard,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                contentPadding: const EdgeInsets.symmetric(vertical: 10),
+              ),
+              style: const TextStyle(color: AppColors.textPrimary),
+            ),
+          ),
           SizedBox(
             height: 48,
             child: ListView.builder(
@@ -112,7 +129,7 @@ class _RoomsListScreenState extends State<RoomsListScreen> with SingleTickerProv
           return RefreshIndicator(
             onRefresh: () => rp.loadRooms(type: ['public', 'private', 'vip', 'agency'][_tabController.index], country: _selectedCountry?.isEmpty == true ? null : _selectedCountry),
             color: AppColors.primary,
-            child: _RoomList(rooms: rp.rooms),
+            child: _RoomList(rooms: rp.rooms, searchQuery: _searchQuery),
           );
         },
             ),
@@ -130,12 +147,16 @@ class _RoomsListScreenState extends State<RoomsListScreen> with SingleTickerProv
 
 class _RoomList extends StatelessWidget {
   final List<RoomModel> rooms;
-  const _RoomList({required this.rooms});
+  final String? searchQuery;
+  const _RoomList({required this.rooms, this.searchQuery});
 
   @override
   Widget build(BuildContext context) {
-    if (rooms.isEmpty) {
-      return const Center(child: Text('لا توجد غرف', style: TextStyle(color: AppColors.textHint)));
+    final filteredRooms = searchQuery == null
+        ? rooms
+        : rooms.where((r) => (r.title ?? '').toLowerCase().contains(searchQuery!.toLowerCase())).toList();
+    if (filteredRooms.isEmpty) {
+      return Center(child: Text(searchQuery == null ? 'لا توجد غرف' : 'لا توجد نتائج لـ "$searchQuery"', style: const TextStyle(color: AppColors.textHint)));
     }
     return ListView.builder(
       padding: const EdgeInsets.all(16),
