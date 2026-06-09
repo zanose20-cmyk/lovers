@@ -6,6 +6,7 @@ import '../services/socket_service.dart';
 import '../config/app_config.dart';
 import '../theme/app_theme.dart';
 import '../providers/rooms_provider.dart';
+import '../providers/api_provider.dart';
 import '../models/room_model.dart';
 
 class RoomScreen extends StatefulWidget {
@@ -115,6 +116,59 @@ class _RoomScreenState extends State<RoomScreen> {
 
   void _muteUser(String userId, bool muted) {
     _socketService.emit('seat:mute', {'roomId': widget.roomId, 'userId': userId, muted: !muted});
+  }
+
+  void _showRoomSettings() {
+    final titleController = TextEditingController(text: _room?.title ?? '');
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.backgroundCard,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom, left: 24, right: 24, top: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(width: 40, height: 4, margin: const EdgeInsets.only(bottom: 16), decoration: BoxDecoration(color: AppColors.textHint, borderRadius: BorderRadius.circular(2))),
+            const Text('إعدادات الغرفة', style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 20),
+            TextField(
+              controller: titleController,
+              style: const TextStyle(color: AppColors.textPrimary),
+              decoration: InputDecoration(
+                labelText: 'اسم الغرفة',
+                labelStyle: const TextStyle(color: AppColors.textHint),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.backgroundCardLight)),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary)),
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity, height: 48,
+              child: ElevatedButton(
+                onPressed: () async {
+                  final newTitle = titleController.text.trim();
+                  if (newTitle.isEmpty) return;
+                  try {
+                    final api = context.read<ApiProvider>().api;
+                    final resp = await api.put('/api/rooms/${widget.roomId}/settings', body: {'title': newTitle});
+                    if (resp.statusCode == 200) {
+                      _loadRoom();
+                      if (mounted) Navigator.pop(ctx);
+                    }
+                  } catch (_) {}
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                child: const Text('حفظ', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
   }
 
   void _showAdminMenu(String targetUserId, String displayName, bool isMuted) {
@@ -243,7 +297,19 @@ class _RoomScreenState extends State<RoomScreen> {
               ),
               child: Column(
                 children: [
-                  Text(_room?.title ?? '', style: const TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(_room?.title ?? '', style: const TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
+                      if (canManage) ...[
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: _showRoomSettings,
+                          child: const Icon(Icons.settings, color: AppColors.textHint, size: 20),
+                        ),
+                      ],
+                    ],
+                  ),
                   const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
