@@ -39,6 +39,7 @@ import 'screens/admin_users_screen.dart';
 import 'screens/admin_rooms_screen.dart';
 import 'screens/admin_gifts_screen.dart';
 import 'screens/badge_shop_screen.dart';
+import 'screens/post_comments_screen.dart';
 import 'services/firebase_service.dart';
 import 'services/notification_service.dart';
 import 'providers/api_provider.dart';
@@ -188,6 +189,7 @@ class LoversApp extends StatelessWidget {
           '/admin-gifts': (ctx) => const AdminGiftsScreen(),
           '/admin-vehicles': (ctx) => const VehiclesStoreScreen(),
           '/badge-shop': (ctx) => const BadgeShopScreen(),
+          '/post-comments': (ctx) => PostCommentsScreen(postId: (ModalRoute.of(ctx)!.settings.arguments as Map)['postId']),
         };
 
         final builder = routes[settings.name];

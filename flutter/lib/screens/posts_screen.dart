@@ -179,7 +179,7 @@ class _PostsScreenState extends State<PostsScreen> {
                         _PostAction(
                           icon: Icons.chat_bubble_outline,
                           label: '${post.commentsCount ?? 0}',
-                          onTap: () { if (post.postId != null) _showCommentDialog(context, post.postId!); },
+                          onTap: () { if (post.postId != null) Navigator.pushNamed(context, '/post-comments', arguments: {'postId': post.postId!}); },
                         ),
                         _PostAction(
                           icon: Icons.share_outlined,

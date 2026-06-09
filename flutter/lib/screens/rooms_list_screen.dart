@@ -14,6 +14,8 @@ class RoomsListScreen extends StatefulWidget {
 
 class _RoomsListScreenState extends State<RoomsListScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  String? _selectedCountry;
+  static const _countries = ['', 'السعودية', 'مصر', 'الإمارات', 'الكويت', 'قطر', 'البحرين', 'عمان', 'الأردن', 'العراق', 'لبنان'];
 
   @override
   void initState() {
@@ -43,7 +45,7 @@ class _RoomsListScreenState extends State<RoomsListScreen> with SingleTickerProv
           unselectedLabelColor: AppColors.textHint,
           onTap: (i) {
             final types = ['public', 'private', 'vip', 'agency'];
-            context.read<RoomsProvider>().loadRooms(type: types[i]);
+            context.read<RoomsProvider>().loadRooms(type: types[i], country: _selectedCountry?.isEmpty == true ? null : _selectedCountry);
           },
           tabs: const [
             Tab(text: 'عامة'),
@@ -53,8 +55,40 @@ class _RoomsListScreenState extends State<RoomsListScreen> with SingleTickerProv
           ],
         ),
       ),
-      body: Consumer<RoomsProvider>(
-        builder: (ctx, rp, _) {
+      body: Column(
+        children: [
+          SizedBox(
+            height: 48,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              itemCount: _countries.length,
+              itemBuilder: (ctx, i) {
+                final c = _countries[i];
+                final isSelected = _selectedCountry == c;
+                return Padding(
+                  padding: const EdgeInsets.only(left: 6),
+                  child: ChoiceChip(
+                    label: Text(c.isEmpty ? 'الكل' : c, style: TextStyle(color: isSelected ? Colors.white : AppColors.textPrimary, fontSize: 12)),
+                    selectedColor: AppColors.primary,
+                    backgroundColor: AppColors.backgroundCard,
+                    selected: isSelected,
+                    onSelected: (selected) {
+                      setState(() => _selectedCountry = c);
+                      final types = ['public', 'private', 'vip', 'agency'];
+                      context.read<RoomsProvider>().loadRooms(
+                        type: types[_tabController.index],
+                        country: c.isEmpty ? null : c,
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
+          ),
+          Expanded(
+            child: Consumer<RoomsProvider>(
+              builder: (ctx, rp, _) {
           if (rp.isLoading && rp.rooms.isEmpty) {
             return ShimmerList(itemCount: 6, itemHeight: 100);
           }
@@ -76,11 +110,14 @@ class _RoomsListScreenState extends State<RoomsListScreen> with SingleTickerProv
             );
           }
           return RefreshIndicator(
-            onRefresh: () => rp.loadRooms(type: ['public', 'private', 'vip', 'agency'][_tabController.index]),
+            onRefresh: () => rp.loadRooms(type: ['public', 'private', 'vip', 'agency'][_tabController.index], country: _selectedCountry?.isEmpty == true ? null : _selectedCountry),
             color: AppColors.primary,
             child: _RoomList(rooms: rp.rooms),
           );
         },
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.pushNamed(context, '/create-room'),

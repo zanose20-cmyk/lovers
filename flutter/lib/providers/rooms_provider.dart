@@ -17,12 +17,17 @@ class RoomsProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  Future<void> loadRooms({String? type}) async {
+  String? _selectedCountry;
+
+  String? get selectedCountry => _selectedCountry;
+
+  Future<void> loadRooms({String? type, String? country}) async {
+    _selectedCountry = country;
     _isLoading = true;
     _error = null;
     notifyListeners();
     try {
-      final data = await _service.listRooms(type: type);
+      final data = await _service.listRooms(type: type, country: country);
       _rooms = data.map((e) => RoomModel.fromJson(e)).toList();
     } catch (e) {
       _error = e.toString();

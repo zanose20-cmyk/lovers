@@ -23,6 +23,7 @@ class _RoomScreenState extends State<RoomScreen> {
   bool _isMuted = false;
   bool _isDeafened = false;
   final _socketService = SocketService();
+  final Map<String, bool> _onlineUsers = {};
 
   @override
   void initState() {
@@ -43,6 +44,12 @@ class _RoomScreenState extends State<RoomScreen> {
         _socketService.on('admin:kicked', (data) { if (mounted) _loadRoom(); });
         _socketService.on('admin:banned', (data) { if (mounted) _loadRoom(); });
         _socketService.on('userMuted', (data) { if (mounted) _loadRoom(); });
+        _socketService.on('user:online', (data) {
+          if (mounted && data['userId'] != null) setState(() => _onlineUsers[data['userId']] = true);
+        });
+        _socketService.on('user:offline', (data) {
+          if (mounted && data['userId'] != null) setState(() => _onlineUsers[data['userId']] = false);
+        });
       }
     } catch (_) {}
   }
@@ -304,6 +311,7 @@ class _RoomScreenState extends State<RoomScreen> {
                       isOccupied: isOccupied,
                       isMuted: isSeatMuted,
                       isLocked: seat?.isLocked ?? false,
+                      isOnline: seat?.userId != null && (_onlineUsers[seat?.userId] ?? false),
                     ),
                   );
                 },
@@ -405,8 +413,8 @@ class _RoomScreenState extends State<RoomScreen> {
 
 class _SeatWidget extends StatelessWidget {
   final int seatIndex; final String? displayName;
-  final bool isOccupied; final bool isMuted; final bool isLocked;
-  const _SeatWidget({required this.seatIndex, this.displayName, required this.isOccupied, required this.isMuted, required this.isLocked});
+  final bool isOccupied; final bool isMuted; final bool isLocked; final bool isOnline;
+  const _SeatWidget({required this.seatIndex, this.displayName, required this.isOccupied, required this.isMuted, required this.isLocked, this.isOnline = false});
 
   @override
   Widget build(BuildContext context) {
@@ -416,27 +424,39 @@ class _SeatWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: isOccupied ? AppColors.success.withValues(alpha: 0.5) : AppColors.backgroundCardLight),
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Stack(
         children: [
-          Icon(
-            isLocked ? Icons.lock : (isOccupied ? Icons.person : Icons.person_add_alt),
-            color: isOccupied ? AppColors.success : (isLocked ? AppColors.error : AppColors.textHint),
-            size: 28,
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                isLocked ? Icons.lock : (isOccupied ? Icons.person : Icons.person_add_alt),
+                color: isOccupied ? AppColors.success : (isLocked ? AppColors.error : AppColors.textHint),
+                size: 28,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                displayName ?? '${seatIndex + 1}',
+                style: TextStyle(
+                  color: isOccupied ? AppColors.textPrimary : AppColors.textHint,
+                  fontSize: 10, fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (isOccupied && isMuted)
+                const Icon(Icons.mic_off, color: AppColors.error, size: 12),
+            ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            displayName ?? '${seatIndex + 1}',
-            style: TextStyle(
-              color: isOccupied ? AppColors.textPrimary : AppColors.textHint,
-              fontSize: 10, fontWeight: FontWeight.bold,
+          if (isOccupied && isOnline)
+            Positioned(
+              top: 4, right: 4,
+              child: Container(
+                width: 8, height: 8,
+                decoration: const BoxDecoration(color: AppColors.success, shape: BoxShape.circle, border: Border.fromBorderSide(BorderSide(color: Colors.white, width: 1.5))),
+              ),
             ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          if (isOccupied && isMuted)
-            const Icon(Icons.mic_off, color: AppColors.error, size: 12),
         ],
       ),
     );

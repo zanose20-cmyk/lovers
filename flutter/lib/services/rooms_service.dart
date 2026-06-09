@@ -5,9 +5,10 @@ class RoomsService {
 
   RoomsService(this.api);
 
-  Future<List<dynamic>> listRooms({String? type, int page = 1, int limit = 20}) async {
+  Future<List<dynamic>> listRooms({String? type, String? country, int page = 1, int limit = 20}) async {
     final params = <String, String>{'page': '$page', 'limit': '$limit'};
     if (type != null) params['type'] = type;
+    if (country != null) params['country'] = country;
     final resp = await api.get('/api/rooms', queryParams: params);
     if (resp.statusCode == 200) return resp.data['rooms'] ?? [];
     return [];

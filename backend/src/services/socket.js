@@ -78,6 +78,8 @@ function initSocket(server) {
           timestamp: new Date()
         });
         
+        io.to(roomId).emit('user:online', { userId: socket.userId });
+        
         socket.emit('roomJoined', { roomId, title: room.title });
       } catch (err) {
         logger.error('joinRoom socket error', err);
@@ -279,6 +281,7 @@ function initSocket(server) {
       // Notify room if user was in one
       if (socket.currentRoom) {
         io.to(socket.currentRoom).emit('userLeft', { userId: socket.userId });
+        io.to(socket.currentRoom).emit('user:offline', { userId: socket.userId });
       }
     });
   });

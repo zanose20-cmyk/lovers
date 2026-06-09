@@ -35,8 +35,15 @@ class SocketService {
   }
 
   void on(String event, Function(dynamic) handler) {
-    _handlers.putIfAbsent(event, () => []).add(handler);
-    socket?.on(event, handler);
+    final list = _handlers.putIfAbsent(event, () => []);
+    list.add(handler);
+    if (_connected) {
+      socket?.on(event, (data) {
+        for (final h in list) {
+          try { h(data); } catch (e) {}
+        }
+      });
+    }
   }
 
   void off(String event, [Function? handler]) {

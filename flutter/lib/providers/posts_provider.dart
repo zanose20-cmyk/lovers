@@ -46,24 +46,44 @@ class PostsProvider extends ChangeNotifier {
   }
 
   Future<bool> likePost(String postId, {String? userId}) async {
+    final uid = userId ?? 'me';
+    final idx = _posts.indexWhere((p) => p.postId == postId);
+    if (idx == -1) return false;
+
+    final wasLiked = (_posts[idx].likes ?? []).contains(uid);
+    final prevCount = _posts[idx].likesCount ?? 0;
+
+    // Optimistic update
+    if (wasLiked) {
+      _posts[idx].likes = (_posts[idx].likes ?? []).where((id) => id != uid).toList();
+      _posts[idx].likesCount = (prevCount - 1).clamp(0, 999999);
+    } else {
+      _posts[idx].likes = [...(_posts[idx].likes ?? []), uid];
+      _posts[idx].likesCount = prevCount + 1;
+    }
+    notifyListeners();
+
     try {
       final result = await _service.likePost(postId);
       if (result != null) {
-        final idx = _posts.indexWhere((p) => p.postId == postId);
-        if (idx != -1) {
-          _posts[idx].likesCount = result['likesCount'];
-          final uid = userId ?? 'me';
-          if (result['liked'] == true) {
-            _posts[idx].likes = [...(_posts[idx].likes ?? []), uid];
-          } else {
-            _posts[idx].likes = (_posts[idx].likes ?? []).where((id) => id != uid).toList();
-          }
-          notifyListeners();
+        _posts[idx].likesCount = result['likesCount'];
+        if (result['liked'] == true) {
+          if (!(_posts[idx].likes ?? []).contains(uid)) _posts[idx].likes = [...(_posts[idx].likes ?? []), uid];
+        } else {
+          _posts[idx].likes = (_posts[idx].likes ?? []).where((id) => id != uid).toList();
         }
+        notifyListeners();
       }
       return true;
     } catch (e) {
-      _error = e.toString();
+      // Rollback
+      if (wasLiked) {
+        _posts[idx].likes = [...(_posts[idx].likes ?? []), uid];
+        _posts[idx].likesCount = prevCount;
+      } else {
+        _posts[idx].likes = (_posts[idx].likes ?? []).where((id) => id != uid).toList();
+        _posts[idx].likesCount = prevCount;
+      }
       notifyListeners();
       return false;
     }
