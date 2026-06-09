@@ -1,7 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 import '../theme/app_theme.dart';
 import '../providers/posts_provider.dart';
+import '../providers/api_provider.dart';
+import '../services/auth_provider.dart';
 import '../widgets/common_widgets.dart';
 
 class CreatePostScreen extends StatefulWidget {
@@ -14,7 +18,9 @@ class CreatePostScreen extends StatefulWidget {
 class _CreatePostScreenState extends State<CreatePostScreen> {
   final _contentController = TextEditingController();
   final _hashtagController = TextEditingController();
+  final _picker = ImagePicker();
   List<String> _hashtags = [];
+  List<_MediaItem> _mediaFiles = [];
   bool _posting = false;
 
   @override
@@ -32,12 +38,47 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     }
   }
 
+  Future<void> _pickImages() async {
+    final files = await _picker.pickMultiImage(imageQuality: 80);
+    if (files.isNotEmpty) {
+      setState(() {
+        _mediaFiles.addAll(files.map((f) => _MediaItem(file: File(f.path), type: 'image')));
+      });
+    }
+  }
+
+  Future<void> _pickVideo() async {
+    final file = await _picker.pickVideo(source: ImageSource.gallery, maxDuration: const Duration(minutes: 5));
+    if (file != null) {
+      setState(() {
+        _mediaFiles.add(_MediaItem(file: File(file.path), type: 'video'));
+      });
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> _uploadMedia() async {
+    final api = context.read<ApiProvider>().api;
+    final List<Map<String, dynamic>> media = [];
+    for (final item in _mediaFiles) {
+      try {
+        final fileName = item.file.path.split('/').last;
+        final bytes = await item.file.readAsBytes();
+        final resp = await api.uploadFile(bytes, fileName, 'posts');
+        if (resp['url'] != null) {
+          media.add({'type': item.type, 'url': resp['url']});
+        }
+      } catch (_) {}
+    }
+    return media;
+  }
+
   Future<void> _publish() async {
-    if (_contentController.text.trim().isEmpty) return;
+    if (_contentController.text.trim().isEmpty && _mediaFiles.isEmpty) return;
     setState(() => _posting = true);
     try {
+      final media = _mediaFiles.isNotEmpty ? await _uploadMedia() : <Map<String, dynamic>>[];
       final pp = context.read<PostsProvider>();
-      final post = await pp.createPost(_contentController.text.trim(), hashtags: _hashtags);
+      final post = await pp.createPost(_contentController.text.trim(), hashtags: _hashtags, media: media.isNotEmpty ? media : null);
       if (post != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم نشر المنشور')));
         Navigator.pop(context);
@@ -67,9 +108,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           ),
         ],
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextField(
               controller: _contentController,
@@ -81,9 +123,64 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 border: InputBorder.none,
               ),
             ),
-            const Spacer(),
+            if (_mediaFiles.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 120,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _mediaFiles.length,
+                  itemBuilder: (ctx, i) {
+                    final item = _mediaFiles[i];
+                    return Stack(
+                      children: [
+                        Container(
+                          width: 120, height: 120,
+                          margin: const EdgeInsets.only(right: 8),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            color: AppColors.backgroundCardLight,
+                          ),
+                          child: item.type == 'image'
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.file(item.file, fit: BoxFit.cover),
+                                )
+                              : const Center(
+                                  child: Icon(Icons.videocam, color: AppColors.primary, size: 40),
+                                ),
+                        ),
+                        Positioned(
+                          top: 4, right: 4,
+                          child: GestureDetector(
+                            onTap: () => setState(() => _mediaFiles.removeAt(i)),
+                            child: Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: const BoxDecoration(color: AppColors.error, shape: BoxShape.circle),
+                              child: const Icon(Icons.close, size: 14, color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ],
+            const SizedBox(height: 16),
             Row(
               children: [
+                IconButton(
+                  icon: const Icon(Icons.photo_library_outlined, color: AppColors.primary),
+                  onPressed: _pickImages,
+                  tooltip: 'صور',
+                ),
+                IconButton(
+                  icon: const Icon(Icons.videocam_outlined, color: AppColors.primary),
+                  onPressed: _pickVideo,
+                  tooltip: 'فيديو',
+                ),
+                const Spacer(),
                 Expanded(
                   child: AppTextField(controller: _hashtagController, label: 'هاشتاغ'),
                 ),
@@ -111,4 +208,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       ),
     );
   }
+}
+
+class _MediaItem {
+  final File file;
+  final String type;
+  const _MediaItem({required this.file, required this.type});
 }

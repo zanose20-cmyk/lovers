@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../theme/app_theme.dart';
 import '../providers/posts_provider.dart';
 import '../services/auth_provider.dart';
@@ -119,6 +120,38 @@ class _PostsScreenState extends State<PostsScreen> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         child: Text(post.content!, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14)),
+                      ),
+                    if (post.media != null && (post.media ?? []).isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: SizedBox(
+                          height: 200,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: post.media!.length,
+                            itemBuilder: (ctx, i) {
+                              final m = post.media![i];
+                              if (m.url == null) return const SizedBox.shrink();
+                              return Container(
+                                width: 200, height: 200,
+                                margin: const EdgeInsets.only(right: 8),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  color: AppColors.backgroundCardLight,
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: CachedNetworkImage(
+                                    imageUrl: m.url!,
+                                    fit: BoxFit.cover,
+                                    placeholder: (_, __) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                                    errorWidget: (_, __, ___) => const Icon(Icons.broken_image, color: AppColors.textHint),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
                       ),
                     if (post.hashtags != null && (post.hashtags ?? []).isNotEmpty)
                       Padding(

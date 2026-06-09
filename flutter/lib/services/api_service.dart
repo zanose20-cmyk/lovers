@@ -56,6 +56,22 @@ class ApiService {
     }
   }
 
+  Future<Map<String, dynamic>> uploadFile(List<int> bytes, String fileName, String folder) async {
+    try {
+      final uri = Uri.parse('$baseUrl/api/users/me/upload');
+      final request = http.MultipartRequest('POST', uri);
+      request.headers['Authorization'] = 'Bearer $_token';
+      request.fields['folder'] = folder;
+      request.files.add(http.MultipartFile.fromBytes('file', bytes, filename: fileName));
+      final streamed = await request.send();
+      final response = await http.Response.fromStream(streamed);
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      return data;
+    } catch (e) {
+      return {'error': 'Upload failed: $e'};
+    }
+  }
+
   ApiResponse _parseResponse(http.Response response) {
     try {
       final data = jsonDecode(response.body) as Map<String, dynamic>;

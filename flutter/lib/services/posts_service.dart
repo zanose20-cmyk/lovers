@@ -14,7 +14,7 @@ class PostsService {
     return [];
   }
 
-  Future<Map?> createPost(String content, {List<String>? media, List<String>? hashtags}) async {
+  Future<Map?> createPost(String content, {List<Map<String, dynamic>>? media, List<String>? hashtags}) async {
     final resp = await api.post('/api/posts', body: {'content': content, 'media': media ?? [], 'hashtags': hashtags ?? []});
     if (resp.statusCode == 200 && resp.data['ok'] == true) return resp.data['post'];
     return null;

@@ -108,6 +108,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final country = user?['country'];
     final age = user?['age'];
     final level = user?['level'] ?? 1;
+    final vipLevel = user?['vipLevel'] ?? 0;
+    final coverUrl = user?['coverUrl'];
 
     return Scaffold(
       backgroundColor: AppColors.backgroundDark,
@@ -132,8 +134,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
         child: Column(
+          children: [
+            if (coverUrl != null)
+              Container(
+                height: 160,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: NetworkImage(coverUrl),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
           children: [
             const SizedBox(height: 20),
             Stack(
@@ -159,7 +175,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ],
             ),
             const SizedBox(height: 16),
-            Text(name, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(name, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+                if (vipLevel > 0) ...[
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(colors: [Colors.amber.shade700, Colors.amber.shade300]),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text('VIP $vipLevel', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ],
+            ),
             const SizedBox(height: 4),
             if (bio.isNotEmpty)
               Text(bio, style: const TextStyle(color: AppColors.textHint, fontSize: 13), textAlign: TextAlign.center),
@@ -246,7 +278,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
-    );
+      ],
+    ),
+    ),
+  );
   }
 }
 

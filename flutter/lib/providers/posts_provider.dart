@@ -29,9 +29,9 @@ class PostsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<PostModel?> createPost(String content, {List<String>? hashtags}) async {
+  Future<PostModel?> createPost(String content, {List<String>? hashtags, List<Map<String, dynamic>>? media}) async {
     try {
-      final data = await _service.createPost(content, hashtags: hashtags);
+      final data = await _service.createPost(content, hashtags: hashtags, media: media);
       if (data != null) {
         final post = PostModel.fromJson(data);
         _posts.insert(0, post);

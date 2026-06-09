@@ -81,12 +81,12 @@ class MessagesProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> sendMessage(String toUserId, String content) async {
+  Future<bool> sendMessage(String toUserId, String content, {String type = 'text'}) async {
     try {
       final resp = await _api.post('/api/messages/private', body: {
         'toUserId': toUserId,
         'content': content,
-        'type': 'text',
+        'type': type,
       });
       if (resp.statusCode == 200 && resp.data['ok'] == true) {
         final msg = MessageModel.fromJson(resp.data['message']);

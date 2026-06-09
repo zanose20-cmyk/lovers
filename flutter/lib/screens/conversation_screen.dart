@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:image_picker/image_picker.dart';
 import '../theme/app_theme.dart';
 import '../providers/messages_provider.dart';
+import '../providers/api_provider.dart';
 
 class ConversationScreen extends StatefulWidget {
   final String userId;
@@ -14,6 +17,7 @@ class ConversationScreen extends StatefulWidget {
 class _ConversationScreenState extends State<ConversationScreen> {
   final _messageController = TextEditingController();
   final _scrollController = ScrollController();
+  final _picker = ImagePicker();
 
   @override
   void initState() {
@@ -30,6 +34,32 @@ class _ConversationScreenState extends State<ConversationScreen> {
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  Future<void> _sendImage() async {
+    final file = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+    if (file == null) return;
+    try {
+      final api = context.read<ApiProvider>().api;
+      final bytes = await file.readAsBytes();
+      final resp = await api.uploadFile(bytes, file.name, 'chat');
+      if (resp['url'] != null) {
+        await context.read<MessagesProvider>().sendMessage(widget.userId, resp['url'], type: 'image');
+      }
+    } catch (_) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('فشل إرسال الصورة')));
+    }
+    _scrollToBottom();
+  }
+
+  void _scrollToBottom() {
+    if (mounted) {
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (mounted && _scrollController.hasClients) {
+          _scrollController.animateTo(_scrollController.position.maxScrollExtent, duration: const Duration(milliseconds: 200), curve: Curves.easeOut);
+        }
+      });
+    }
   }
 
   Future<void> _sendMessage() async {
@@ -160,10 +190,21 @@ class _ConversationScreenState extends State<ConversationScreen> {
                                       bottomLeft: !isMe ? const Radius.circular(4) : Radius.circular(16),
                                     ),
                                   ),
-                                  child: Text(
-                                    msg.content ?? '',
-                                    style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
-                                  ),
+                                  child: msg.type == 'image'
+                                      ? ClipRRect(
+                                          borderRadius: BorderRadius.circular(12),
+                                          child: CachedNetworkImage(
+                                            imageUrl: msg.content ?? '',
+                                            width: 200,
+                                            fit: BoxFit.cover,
+                                            placeholder: (_, __) => const SizedBox(width: 200, height: 150, child: Center(child: CircularProgressIndicator(strokeWidth: 2))),
+                                            errorWidget: (_, __, ___) => const Icon(Icons.broken_image, color: AppColors.textHint),
+                                          ),
+                                        )
+                                      : Text(
+                                          msg.content ?? '',
+                                          style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+                                        ),
                                 ),
                                 const SizedBox(height: 2),
                                 if (msg.createdAt != null)
@@ -185,6 +226,10 @@ class _ConversationScreenState extends State<ConversationScreen> {
                 ),
                 child: Row(
                   children: [
+                    IconButton(
+                      icon: const Icon(Icons.photo_camera_outlined, color: AppColors.primary),
+                      onPressed: _sendImage,
+                    ),
                     Expanded(
                       child: TextField(
                         controller: _messageController,
