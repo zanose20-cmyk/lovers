@@ -19,12 +19,14 @@ class _ConversationScreenState extends State<ConversationScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<MessagesProvider>().setCurrentChatUser(widget.userId);
       context.read<MessagesProvider>().loadMessages(widget.userId);
     });
   }
 
   @override
   void dispose() {
+    context.read<MessagesProvider>().setCurrentChatUser(null);
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();

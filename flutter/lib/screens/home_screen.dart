@@ -33,9 +33,11 @@ class _HomeScreenState extends State<HomeScreen> {
       context.read<RoomsProvider>().loadRooms(type: 'public');
       context.read<TasksProvider>().loadDailyTasks();
       context.read<MessagesProvider>().loadConversations();
-      if (context.read<AuthProvider>().user != null) {
-        final chargeLevel = context.read<AuthProvider>().user!['chargeLevel'];
+      final auth = context.read<AuthProvider>();
+      if (auth.user != null) {
+        final chargeLevel = auth.user!['chargeLevel'];
         context.read<WalletProvider>().setBalance((chargeLevel as num?)?.toInt() ?? 0);
+        context.read<MessagesProvider>().listenForMessages(auth.user!['userId']);
       }
     });
   }

@@ -1,11 +1,14 @@
 import 'package:flutter/foundation.dart';
 import '../models/message_model.dart';
 import '../services/api_service.dart';
+import '../services/socket_service.dart';
 
 class MessagesProvider extends ChangeNotifier {
   final ApiService _api;
+  final SocketService _socket = SocketService();
   List<ConversationModel> _conversations = [];
   List<MessageModel> _messages = [];
+  String? _currentChatUserId;
   bool _isLoading = false;
   String? _error;
 
@@ -15,6 +18,33 @@ class MessagesProvider extends ChangeNotifier {
   List<MessageModel> get messages => _messages;
   bool get isLoading => _isLoading;
   String? get error => _error;
+
+  void listenForMessages(String myUserId) {
+    _socket.on('privateMessage', (data) {
+      try {
+        final msg = MessageModel.fromJson(data);
+        if (msg.fromUserId == _currentChatUserId || msg.toUserId == _currentChatUserId) {
+          if (msg.fromUserId != myUserId) {
+            _messages.add(msg);
+            notifyListeners();
+          }
+        }
+        final idx = _conversations.indexWhere((c) => c.user?['userId'] == msg.fromUserId || c.user?['userId'] == msg.toUserId);
+        if (idx != -1) {
+          _conversations[idx] = ConversationModel(
+            user: _conversations[idx].user,
+            lastMessage: data,
+            unread: msg.fromUserId == _currentChatUserId ? 0 : (_conversations[idx].unread ?? 0) + 1,
+          );
+          notifyListeners();
+        }
+      } catch (_) {}
+    });
+  }
+
+  void setCurrentChatUser(String? userId) {
+    _currentChatUserId = userId;
+  }
 
   Future<void> loadConversations() async {
     _isLoading = true;

@@ -59,10 +59,33 @@ class NotificationService {
         onNavigate!('/friend-requests', null);
         break;
       case 'room':
+      case 'room_invite':
         onNavigate!('/room', targetId);
         break;
       case 'post':
         onNavigate!('/posts', null);
+        break;
+      case 'like':
+      case 'comment':
+        onNavigate!('/posts', null);
+        break;
+      case 'gift':
+        onNavigate!('/store', null);
+        break;
+      case 'follow':
+        onNavigate!('/profile', targetId);
+        break;
+      case 'vip':
+        onNavigate!('/vip', null);
+        break;
+      case 'daily_reward':
+        onNavigate!('/daily-tasks', null);
+        break;
+      case 'achievement':
+        onNavigate!('/profile', null);
+        break;
+      case 'agency':
+        onNavigate!('/agencies', null);
         break;
     }
   }

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/auth_provider.dart';
+import '../services/socket_service.dart';
+import '../config/app_config.dart';
 import '../theme/app_theme.dart';
 import '../providers/rooms_provider.dart';
 import '../models/room_model.dart';
@@ -18,11 +21,29 @@ class _RoomScreenState extends State<RoomScreen> {
   bool _isLoading = true;
   bool _isMuted = false;
   bool _isDeafened = false;
+  final _socketService = SocketService();
 
   @override
   void initState() {
     super.initState();
     _loadRoom();
+    _connectSocket();
+  }
+
+  Future<void> _connectSocket() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('server_token');
+      if (token != null && mounted) {
+        _socketService.connect(AppConfig.serverUrl, token);
+        _socketService.on('userJoined', (data) { if (mounted) _loadRoom(); });
+        _socketService.on('userLeft', (data) { if (mounted) _loadRoom(); });
+        _socketService.on('userRemoved', (data) { if (mounted) _loadRoom(); });
+        _socketService.on('admin:kicked', (data) { if (mounted) _loadRoom(); });
+        _socketService.on('admin:banned', (data) { if (mounted) _loadRoom(); });
+        _socketService.on('userMuted', (data) { if (mounted) _loadRoom(); });
+      }
+    } catch (_) {}
   }
 
   Future<void> _loadRoom() async {

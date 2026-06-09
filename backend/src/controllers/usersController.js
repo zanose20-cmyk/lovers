@@ -74,8 +74,17 @@ async function searchUsers(req, res) {
         { email: regex }
       ]
     });
+
+    const Post = require('../models/Post');
+    const hashtags = await Post.aggregate([
+      { $unwind: '$hashtags' },
+      { $match: { hashtags: regex } },
+      { $group: { _id: '$hashtags', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 20 }
+    ]);
     
-    res.json({ users, total, page: parseInt(page), pages: Math.ceil(total / limit) });
+    res.json({ users, total, page: parseInt(page), pages: Math.ceil(total / limit), hashtags: hashtags.map(h => ({ tag: h._id, count: h.count })) });
   } catch (err) {
     logger.error('searchUsers error', err);
     res.status(500).json({ error: 'Failed to search users' });

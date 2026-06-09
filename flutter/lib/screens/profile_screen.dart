@@ -39,6 +39,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         if (!mounted) return;
         if (resp.statusCode == 200) {
           _profile = resp.data['user'] as Map<String, dynamic>?;
+          final myFriends = auth.user?['friends'] as List? ?? [];
+          _isFollowing = myFriends.contains(widget.userId);
         }
       } catch (e) {
         if (mounted) {
