@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../providers/notifications_provider.dart';
+import '../models/notification_model.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -19,42 +20,76 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     });
   }
 
-  @override
+          @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
-      appBar: AppBar(
-        title: const Text('الإشعارات'),
-        actions: [
-          TextButton(
-            onPressed: () async {
-              try {
-                await context.read<NotificationsProvider>().markAllRead();
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم تحديد الكل كمقروء')));
-                }
-              } catch (_) {}
-            },
-            child: const Text('قراءة الكل', style: TextStyle(color: AppColors.primary, fontSize: 13)),
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        backgroundColor: AppColors.backgroundDark,
+        appBar: AppBar(
+          title: const Text('الإشعارات'),
+          bottom: const TabBar(
+            indicatorColor: AppColors.primary,
+            labelColor: AppColors.primary,
+            unselectedLabelColor: AppColors.textHint,
+            tabs: [
+              Tab(text: 'الكل'),
+              Tab(text: 'غير المقروءة'),
+            ],
           ),
-        ],
+          actions: [
+            TextButton(
+              onPressed: () async {
+                try {
+                  await context.read<NotificationsProvider>().markAllRead();
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم تحديد الكل كمقروء')));
+                  }
+                } catch (_) {}
+              },
+              child: const Text('قراءة الكل', style: TextStyle(color: AppColors.primary, fontSize: 13)),
+            ),
+          ],
+        ),
+        body: TabBarView(
+          children: [
+            _buildNotificationList(filterUnread: false),
+            _buildNotificationList(filterUnread: true),
+          ],
+        ),
       ),
-      body: Consumer<NotificationsProvider>(
-        builder: (ctx, np, _) {
-          if (np.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (np.notifications.isEmpty) {
-            return const Center(child: Text('لا توجد إشعارات', style: TextStyle(color: AppColors.textHint)));
-          }
-          return RefreshIndicator(
-            onRefresh: () => np.loadNotifications(),
-            color: AppColors.primary,
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: np.notifications.length,
-              itemBuilder: (context, index) {
-              final notif = np.notifications[index];
+    );
+  }
+
+  Widget _buildNotificationList({required bool filterUnread}) {
+    return Consumer<NotificationsProvider>(
+      builder: (ctx, np, _) {
+        if (np.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        final list = filterUnread
+            ? np.notifications.where((n) => !(n.isRead ?? true)).toList()
+            : np.notifications;
+        if (list.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(filterUnread ? Icons.done_all : Icons.notifications_off, color: AppColors.textHint, size: 48),
+                const SizedBox(height: 12),
+                Text(filterUnread ? 'لا توجد إشعارات غير مقروءة' : 'لا توجد إشعارات', style: const TextStyle(color: AppColors.textHint)),
+              ],
+            ),
+          );
+        }
+        return RefreshIndicator(
+          onRefresh: () => np.loadNotifications(),
+          color: AppColors.primary,
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: list.length,
+            itemBuilder: (context, index) {
+              final notif = list[index];
               final icon = _iconForType(notif.type);
               final color = _colorForType(notif.type);
               final isUnread = !(notif.isRead ?? true);
@@ -62,6 +97,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               return GestureDetector(
                 onTap: () {
                   if (isUnread && notif.notifId != null) np.markRead(notif.notifId!);
+                  _handleNotificationTap(notif);
                 },
                 child: Container(
                   margin: const EdgeInsets.only(bottom: 8),
@@ -113,8 +149,20 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           ),
         );
       },
-      ),
     );
+  }
+
+  void _handleNotificationTap(NotificationModel notif) {
+    final data = notif.data;
+    if (data == null) return;
+    final context = this.context;
+    if (data['roomId'] != null) {
+      Navigator.pushNamed(context, '/room', arguments: data['roomId']);
+    } else if (data['userId'] != null) {
+      Navigator.pushNamed(context, '/profile', arguments: data['userId']);
+    } else if (data['postId'] != null) {
+      Navigator.pushNamed(context, '/post-comments', arguments: {'postId': data['postId']});
+    }
   }
 
   IconData _iconForType(String? type) {

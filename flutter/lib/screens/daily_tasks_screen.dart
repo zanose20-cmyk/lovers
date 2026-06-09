@@ -11,91 +11,144 @@ class DailyTasksScreen extends StatefulWidget {
   State<DailyTasksScreen> createState() => _DailyTasksScreenState();
 }
 
-class _DailyTasksScreenState extends State<DailyTasksScreen> {
+class _DailyTasksScreenState extends State<DailyTasksScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<TasksProvider>().loadDailyTasks();
     });
   }
 
   @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundDark,
-      appBar: AppBar(title: const Text('المهام اليومية')),
-      body: Consumer<TasksProvider>(
-        builder: (ctx, tp, _) {
-          if (tp.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: AppColors.premiumGradient, begin: Alignment.topLeft, end: Alignment.bottomRight),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('تسجيل الدخول المستمر', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                              const SizedBox(height: 4),
-                              Text('${tp.loginStreak ?? 0} أيام', style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold)),
-                            ],
+      appBar: AppBar(
+        title: const Text('المهام'),
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: AppColors.primary,
+          labelColor: AppColors.primary,
+          unselectedLabelColor: AppColors.textHint,
+          tabs: const [
+            Tab(text: 'يومية'),
+            Tab(text: 'أسبوعية'),
+          ],
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildDailyTasks(),
+          _buildWeeklyTasks(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDailyTasks() {
+    return Consumer<TasksProvider>(
+      builder: (ctx, tp, _) {
+        if (tp.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(colors: AppColors.premiumGradient, begin: Alignment.topLeft, end: Alignment.bottomRight),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('تسجيل الدخول المستمر', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                            const SizedBox(height: 4),
+                            Text('${tp.loginStreak ?? 0} أيام', style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(Icons.local_fire_department, color: Colors.orangeAccent, size: 32),
+                          child: const Icon(Icons.local_fire_department, color: Colors.orangeAccent, size: 32),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: List.generate(
+                        7,
+                        (i) => Container(
+                          width: 36, height: 36,
+                          decoration: BoxDecoration(
+                            color: i < (tp.loginStreak ?? 0) ? Colors.white.withValues(alpha: 0.3) : Colors.white.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: List.generate(
-                          7,
-                          (i) => Container(
-                            width: 36, height: 36,
-                            decoration: BoxDecoration(
-                              color: i < (tp.loginStreak ?? 0) ? Colors.white.withValues(alpha: 0.3) : Colors.white.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Center(
-                              child: i < (tp.loginStreak ?? 0)
-                                  ? const Icon(Icons.check, color: Colors.white, size: 18)
-                                  : Text('${i + 1}', style: const TextStyle(color: Colors.white54, fontSize: 14)),
-                            ),
+                          child: Center(
+                            child: i < (tp.loginStreak ?? 0)
+                                ? const Icon(Icons.check, color: Colors.white, size: 18)
+                                : Text('${i + 1}', style: const TextStyle(color: Colors.white54, fontSize: 14)),
                           ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 24),
-                const Text('المهام', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
-                const SizedBox(height: 12),
-                ...tp.tasks.map((task) => _TaskCard(task: task)),
-              ],
-            ),
-          );
-        },
-      ),
+              ),
+              const SizedBox(height: 24),
+              const Text('المهام اليومية', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+              const SizedBox(height: 12),
+              ...tp.tasks.map((task) => _TaskCard(task: task)),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildWeeklyTasks() {
+    return Consumer<TasksProvider>(
+      builder: (ctx, tp, _) {
+        if (tp.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        return Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.calendar_view_week, color: AppColors.textHint, size: 48),
+              const SizedBox(height: 12),
+              const Text('قريباً: المهام الأسبوعية', style: TextStyle(color: AppColors.textHint, fontSize: 16)),
+              const SizedBox(height: 8),
+              const Text('ستتوفر مهام أسبوعية بمكافآت أكبر', style: TextStyle(color: AppColors.textHint, fontSize: 12)),
+            ],
+          ),
+        );
+      },
     );
   }
 }

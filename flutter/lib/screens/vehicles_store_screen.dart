@@ -12,14 +12,32 @@ class VehiclesStoreScreen extends StatefulWidget {
   State<VehiclesStoreScreen> createState() => _VehiclesStoreScreenState();
 }
 
-class _VehiclesStoreScreenState extends State<VehiclesStoreScreen> {
+class _VehiclesStoreScreenState extends State<VehiclesStoreScreen> with SingleTickerProviderStateMixin {
   List<VehicleModel> _vehicles = [];
+  List<VehicleModel> _myVehicles = [];
   bool _loading = true;
+  late TabController _tabController;
+  String _selectedCategory = 'all';
+
+  static const _categories = [
+    {'key': 'all', 'label': 'الكل', 'icon': Icons.apps},
+    {'key': 'car', 'label': 'سيارات', 'icon': Icons.directions_car},
+    {'key': 'plane', 'label': 'طائرات', 'icon': Icons.flight},
+    {'key': 'yacht', 'label': 'يخوت', 'icon': Icons.directions_boat},
+    {'key': 'legendary', 'label': 'أسطورية', 'icon': Icons.workspace_premium},
+  ];
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
     _load();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -31,6 +49,9 @@ class _VehiclesStoreScreenState extends State<VehiclesStoreScreen> {
         final list = (data is List) ? data : (data['vehicles'] ?? []);
         _vehicles = (list as List).map((e) => VehicleModel.fromJson(e)).toList();
       }
+      final auth = context.read<AuthProvider>();
+      final myVehicles = auth.user?['vehicles'] as List? ?? [];
+      _myVehicles = myVehicles.map((e) => VehicleModel.fromJson(e)).toList();
     } catch (_) {}
     if (mounted) setState(() => _loading = false);
   }
@@ -159,5 +180,77 @@ class _VehiclesStoreScreenState extends State<VehiclesStoreScreen> {
       case 'legendary': return Icons.workspace_premium;
       default: return Icons.directions_car;
     }
+  }
+}
+
+class _VehicleCard extends StatelessWidget {
+  final VehicleModel vehicle;
+  final bool isOwned;
+  final VoidCallback? onBuy;
+  final VoidCallback? onEquip;
+
+  const _VehicleCard({required this.vehicle, this.isOwned = false, this.onBuy, this.onEquip});
+
+  IconData _vehicleIcon(String? type) {
+    switch (type) {
+      case 'car': return Icons.directions_car;
+      case 'plane': return Icons.flight;
+      case 'yacht': return Icons.directions_boat;
+      case 'legendary': return Icons.workspace_premium;
+      default: return Icons.directions_car;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isLegendary = vehicle.type == 'legendary';
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundCard,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isLegendary ? AppColors.gold.withValues(alpha: 0.5) : AppColors.backgroundCardLight,
+        ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Stack(
+            children: [
+              Icon(_vehicleIcon(vehicle.type), size: 40, color: isLegendary ? AppColors.gold : AppColors.primary),
+              if (isOwned)
+                Positioned(
+                  top: -4, right: -4,
+                  child: Container(
+                    width: 18, height: 18,
+                    decoration: const BoxDecoration(color: AppColors.success, shape: BoxShape.circle),
+                    child: const Icon(Icons.check, color: Colors.white, size: 10),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(vehicle.name ?? '', style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 14), textAlign: TextAlign.center),
+          const SizedBox(height: 4),
+          Text('${vehicle.priceCoins ?? 0} عملة', style: const TextStyle(color: AppColors.gold, fontSize: 12)),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: isOwned ? onEquip : onBuy,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isOwned ? AppColors.success.withValues(alpha: 0.15) : AppColors.primary.withValues(alpha: 0.15),
+                foregroundColor: isOwned ? AppColors.success : AppColors.primary,
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                elevation: 0,
+              ),
+              child: Text(isOwned ? 'تجهيز' : 'شراء', style: const TextStyle(fontSize: 12)),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
