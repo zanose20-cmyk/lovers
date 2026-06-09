@@ -6,7 +6,8 @@ const {
   listRooms, deleteRoom,
   listGifts,
   listReports,
-  getAdminLogs
+  getAdminLogs,
+  seedVIPLevels,
 } = require('../controllers/adminController');
 const { requireAuth } = require('../middleware/authMiddleware');
 const { requireRole } = require('../middleware/roleMiddleware');
@@ -37,5 +38,8 @@ router.get('/reports', listReports);
 
 // Logs
 router.get('/logs', getAdminLogs);
+
+// Seed
+router.post('/seed/vip', seedVIPLevels);
 
 module.exports = router;
