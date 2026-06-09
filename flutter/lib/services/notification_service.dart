@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
@@ -12,6 +13,9 @@ class NotificationService {
   static Future<void> Function(String token)? onTokenUpdate;
 
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
+  StreamSubscription<String>? _tokenSub;
+  StreamSubscription<RemoteMessage>? _messageSub;
+  StreamSubscription<RemoteMessage>? _tapSub;
 
   Future<void> initialize() async {
     NotificationSettings settings = await _messaging.requestPermission(
@@ -22,9 +26,18 @@ class NotificationService {
     final token = await _messaging.getToken();
     if (token != null) _sendTokenToServer(token);
 
-    _messaging.onTokenRefresh.listen(_sendTokenToServer);
-    FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
-    FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationTap);
+    _tokenSub?.cancel();
+    _tokenSub = _messaging.onTokenRefresh.listen(_sendTokenToServer);
+    _messageSub?.cancel();
+    _messageSub = FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
+    _tapSub?.cancel();
+    _tapSub = FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationTap);
+  }
+
+  void dispose() {
+    _tokenSub?.cancel();
+    _messageSub?.cancel();
+    _tapSub?.cancel();
   }
 
   void _handleForegroundMessage(RemoteMessage message) {

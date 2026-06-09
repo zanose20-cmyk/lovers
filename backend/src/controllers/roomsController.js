@@ -36,14 +36,13 @@ async function createRoom(req, res) {
       metadata: {}
     });
     
-    await room.save();
-    
     room.logs.push({
       action: 'room_created',
       userId: user.userId,
       timestamp: new Date(),
       details: `Room created by ${user.displayName}`
     });
+    
     await room.save();
     
     res.json({ ok: true, room });
@@ -58,6 +57,7 @@ async function getRoom(req, res) {
     const { roomId } = req.params;
     const room = await Room.findOne({ roomId }).lean();
     if (!room) return res.status(404).json({ error: 'Room not found' });
+    delete room.password;
     res.json(room);
   } catch (err) {
     logger.error('getRoom error', err);
@@ -72,10 +72,15 @@ async function listRooms(req, res) {
     if (type) filter.type = type;
     else filter.type = { $in: ['public', 'vip'] };
     
+    const allowedSorts = ['-createdAt', 'createdAt', '-capacity', 'capacity', 'title'];
+    const safeSort = allowedSorts.includes(sort) ? sort : '-createdAt';
+    const cappedLimit = Math.min(parseInt(limit) || 20, 50);
+    
     const rooms = await Room.find(filter)
-      .sort(sort)
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit))
+      .select('-password')
+      .sort(safeSort)
+      .skip((page - 1) * cappedLimit)
+      .limit(cappedLimit)
       .lean();
     
     const total = await Room.countDocuments(filter);
@@ -372,7 +377,12 @@ async function updateRoomSettings(req, res) {
     
     const allowedFields = ['title', 'capacity', 'maxCapacity', 'password', 'background', 'entranceEffects', 'ads'];
     for (const field of allowedFields) {
-      if (updates[field] !== undefined) room[field] = updates[field];
+      if (updates[field] !== undefined) {
+        if (field === 'title' && typeof updates[field] !== 'string') continue;
+        if ((field === 'capacity' || field === 'maxCapacity') && (typeof updates[field] !== 'number' || updates[field] < 2 || updates[field] > 100)) continue;
+        if (field === 'password' && typeof updates[field] !== 'string') continue;
+        room[field] = updates[field];
+      }
     }
     
     room.logs.push({

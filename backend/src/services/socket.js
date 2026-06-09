@@ -12,7 +12,7 @@ let io;
 
 function initSocket(server) {
   io = new Server(server, {
-    cors: { origin: '*' },
+    cors: { origin: config.corsOrigin || '*' },
     maxHttpBufferSize: 1e6,
     pingTimeout: 60000,
     pingInterval: 25000
@@ -95,22 +95,25 @@ function initSocket(server) {
     // --- Chat Events ---
     socket.on('roomMessage', async (payload) => {
       try {
+        if (!socket.userId) return;
+        const content = typeof payload.content === 'string' ? payload.content.trim().slice(0, 2000) : '';
+        const roomId = typeof payload.roomId === 'string' ? payload.roomId : '';
+        if (!roomId || !content) return;
+        
         const message = {
           messageId: uuidv4(),
           fromUserId: socket.userId,
-          roomId: payload.roomId,
+          roomId,
           type: payload.type || 'text',
-          content: payload.content,
-          attachments: payload.attachments || [],
+          content,
+          attachments: Array.isArray(payload.attachments) ? payload.attachments.slice(0, 10) : [],
           createdAt: new Date()
         };
         
-        // Save to DB
         const Msg = require('../models/Message');
         await new Msg(message).save();
         
-        // Broadcast to room
-        io.to(payload.roomId).emit('roomMessage', message);
+        io.to(roomId).emit('roomMessage', message);
       } catch (err) {
         logger.error('roomMessage socket error', err);
       }

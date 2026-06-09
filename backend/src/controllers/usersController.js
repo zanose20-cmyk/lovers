@@ -140,6 +140,11 @@ async function unfollowUser(req, res) {
     const { userId } = req.params;
     const currentUserId = req.user.userId;
     
+    const currentUser = await User.findOne({ userId: currentUserId });
+    if (!currentUser || !(currentUser.following || []).includes(userId)) {
+      return res.json({ ok: true });
+    }
+    
     await User.updateOne(
       { userId: currentUserId },
       { $inc: { followingCount: -1 }, $pull: { following: userId } }

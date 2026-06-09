@@ -124,7 +124,7 @@ class _WalletScreenState extends State<WalletScreen> {
                   final ok = await context.read<WalletProvider>().recharge(amount);
                   if (ctx.mounted) {
                     Navigator.pop(ctx);
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text(ok ? 'تم الشحن بنجاح' : 'فشل الشحن')),
                     );
                   }

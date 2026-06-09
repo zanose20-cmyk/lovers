@@ -64,7 +64,11 @@ app.use('/api/tasks', tasksRoutes);
 app.use('/api/admin', apiLimiter, adminRoutes);
 
 // Health
-app.get('/health', (req, res) => res.json({ ok: true, timestamp: new Date() }));
+app.get('/health', (req, res) => {
+  const mongoose = require('mongoose');
+  const dbOk = mongoose.connection.readyState === 1;
+  res.json({ ok: true, db: dbOk ? 'connected' : 'disconnected', timestamp: new Date() });
+});
 
 // 404 handler
 app.use(notFoundHandler);

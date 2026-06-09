@@ -19,6 +19,7 @@ async function sendGift(req, res) {
     const fromUser = req.user;
     const { toUserId, giftSku, count = 1, roomId } = req.body;
     if (!toUserId || !giftSku) return res.status(400).json({ error: 'toUserId and giftSku required' });
+    const giftCount = Math.min(Math.max(parseInt(count) || 1, 1), 100);
 
     const sender = await User.findOne({ userId: fromUser.userId });
     const receiver = await User.findOne({ userId: toUserId });
@@ -27,16 +28,16 @@ async function sendGift(req, res) {
     const gift = await Gift.findOne({ sku: giftSku });
     if (!gift) return res.status(404).json({ error: 'Gift not found' });
 
-    const totalCoins = (gift.priceCoins || 0) * count;
-    const totalDiamonds = (gift.priceDiamonds || 0) * count;
+    const totalCoins = (gift.priceCoins || 0) * giftCount;
+    const totalDiamonds = (gift.priceDiamonds || 0) * giftCount;
 
     // Basic balance check: use chargeLevel as coins for demo
     if ((sender.chargeLevel || 0) < totalCoins) return res.status(400).json({ error: 'Insufficient coins' });
 
     // apply changes
     sender.chargeLevel = (sender.chargeLevel || 0) - totalCoins;
-    sender.giftsSentCount = (sender.giftsSentCount || 0) + count;
-    receiver.giftsReceivedCount = (receiver.giftsReceivedCount || 0) + count;
+    sender.giftsSentCount = (sender.giftsSentCount || 0) + giftCount;
+    receiver.giftsReceivedCount = (receiver.giftsReceivedCount || 0) + giftCount;
 
     await sender.save();
     await receiver.save();
@@ -50,7 +51,7 @@ async function sendGift(req, res) {
     // Emit socket event if roomId provided (non-blocking)
     try {
       const { emitToRoom } = require('../services/socket');
-      if (roomId) emitToRoom(roomId, 'giftSent', { from: sender.userId, to: receiver.userId, gift: giftSku, count, giftMeta: gift });
+      if (roomId) emitToRoom(roomId, 'giftSent', { from: sender.userId, to: receiver.userId, gift: giftSku, count: giftCount, giftMeta: gift });
     } catch (e) {
       // ignore
     }
@@ -135,12 +136,17 @@ async function updateGift(req, res) {
   try {
     const sku = req.params.sku;
     const body = req.body || {};
-    const gift = await Gift.findOneAndUpdate({ sku }, { $set: body }, { new: true });
+    const allowedFields = ['name', 'type', 'rarity', 'priceCoins', 'priceDiamonds', 'prices', 'imageUrl', 'animationUrl', 'asset3dUrl', 'fullscreenEffect', 'entryEffect', 'effects', 'meta'];
+    const updates = {};
+    for (const field of allowedFields) {
+      if (body[field] !== undefined) updates[field] = body[field];
+    }
+    const gift = await Gift.findOneAndUpdate({ sku }, { $set: updates }, { new: true });
     if (!gift) return res.status(404).json({ error: 'Gift not found' });
     res.json({ ok: true, gift });
   } catch (err) {
     logger.error('updateGift error', err);
-    res.status(500).json({ error: 'Failed to update gift', details: err.message });
+    res.status(500).json({ error: 'Failed to update gift' });
   }
 }
 

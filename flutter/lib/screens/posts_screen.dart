@@ -149,12 +149,17 @@ class _PostsScreenState extends State<PostsScreen> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('إلغاء', style: TextStyle(color: AppColors.textHint))),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               final text = controller.text.trim();
               if (text.isNotEmpty) {
-                context.read<PostsProvider>().commentPost(postId, text);
+                try {
+                  await context.read<PostsProvider>().commentPost(postId, text);
+                  if (ctx.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم إرسال التعليق')));
+                } catch (_) {
+                  if (ctx.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('فشل إرسال التعليق')));
+                }
               }
-              Navigator.pop(ctx);
+              if (ctx.mounted) Navigator.pop(ctx);
             },
             child: const Text('إرسال', style: TextStyle(color: AppColors.primary)),
           ),
