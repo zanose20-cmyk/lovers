@@ -177,6 +177,12 @@ function initSocket(server) {
       io.to(roomId).emit('seat:released', { userId: socket.userId, seatIndex });
     });
 
+    // --- Room Settings ---
+    socket.on('room:settingsChanged', ({ roomId, settings }) => {
+      if (!socket.userId || !roomId) return;
+      io.to(roomId).emit('room:settingsUpdated', { roomId, settings, updatedBy: socket.userId });
+    });
+
     // --- Gift Events ---
     socket.on('gift:send', async ({ roomId, toUserId, giftSku, count, giftMeta }) => {
       const giftPayload = { fromUserId: socket.userId, toUserId, giftSku, count, giftMeta };

@@ -63,6 +63,7 @@ app.use('/api', vehiclesRoutes);
 app.use('/api/vip', vipRoutes);
 app.use('/api/tasks', tasksRoutes);
 app.use('/api/friends', friendsRoutes);
+app.use('/api/reports', require('./routes/reports'));
 app.use('/api/admin', apiLimiter, adminRoutes);
 
 // Health

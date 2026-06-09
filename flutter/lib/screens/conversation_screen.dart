@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import '../theme/app_theme.dart';
 import '../providers/messages_provider.dart';
 import '../providers/api_provider.dart';
+import '../widgets/report_dialog.dart';
 
 class ConversationScreen extends StatefulWidget {
   final String userId;
@@ -149,6 +150,15 @@ class _ConversationScreenState extends State<ConversationScreen> {
                 'displayName': userName,
               });
             },
+          ),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert, color: AppColors.textHint),
+            onSelected: (v) {
+              if (v == 'report') ReportDialog.show(context, targetType: 'user', targetId: widget.userId);
+            },
+            itemBuilder: (_) => [
+              const PopupMenuItem(value: 'report', child: Text('إبلاغ', style: TextStyle(color: Colors.orange))),
+            ],
           ),
         ],
       ),

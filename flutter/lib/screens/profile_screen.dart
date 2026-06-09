@@ -5,6 +5,7 @@ import '../theme/app_theme.dart';
 import '../providers/api_provider.dart';
 import '../services/api_service.dart';
 import '../config/app_config.dart';
+import '../widgets/report_dialog.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String? userId;
@@ -121,8 +122,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
               icon: const Icon(Icons.more_vert, color: AppColors.textPrimary),
               onSelected: (v) {
                 if (v == 'block') _blockUser();
+                if (v == 'report') ReportDialog.show(context, targetType: 'user', targetId: widget.userId!);
               },
               itemBuilder: (_) => [
+                const PopupMenuItem(
+                  value: 'report',
+                  child: Text('إبلاغ', style: TextStyle(color: Colors.orange)),
+                ),
                 const PopupMenuItem(
                   value: 'block',
                   child: Text('حظر المستخدم', style: TextStyle(color: AppColors.error)),

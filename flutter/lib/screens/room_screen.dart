@@ -118,6 +118,26 @@ class _RoomScreenState extends State<RoomScreen> {
     _socketService.emit('seat:mute', {'roomId': widget.roomId, 'userId': userId, muted: !muted});
   }
 
+  void _muteAll() {
+    final seats = _room?.seats ?? [];
+    for (final seat in seats) {
+      if (seat.userId != null && !(seat.isMuted ?? false)) {
+        _muteUser(seat.userId!, false);
+      }
+    }
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم كتم جميع المستخدمين')));
+  }
+
+  void _unmuteAll() {
+    final seats = _room?.seats ?? [];
+    for (final seat in seats) {
+      if (seat.userId != null && (seat.isMuted ?? false)) {
+        _muteUser(seat.userId!, true);
+      }
+    }
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم إلغاء الكتم للجميع')));
+  }
+
   void _showRoomSettings() {
     final titleController = TextEditingController(text: _room?.title ?? '');
     showModalBottomSheet(
@@ -340,6 +360,26 @@ class _RoomScreenState extends State<RoomScreen> {
                       ),
                     ],
                   ),
+                  if (canManage) ...[
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _ControlButton(
+                          icon: Icons.volume_off,
+                          label: 'كتم الكل',
+                          color: AppColors.error,
+                          onTap: _muteAll,
+                        ),
+                        _ControlButton(
+                          icon: Icons.volume_up,
+                          label: 'إلغاء الكل',
+                          color: AppColors.success,
+                          onTap: _unmuteAll,
+                        ),
+                      ],
+                    ),
+                  ],
                   const SizedBox(height: 12),
                   SizedBox(
                     width: double.infinity,
