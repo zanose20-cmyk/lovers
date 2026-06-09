@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'theme/app_theme.dart';
+import 'config/app_config.dart';
+import 'services/api_service.dart';
+import 'services/auth_provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
@@ -55,6 +58,20 @@ void main() async {
   }
   NotificationService.onNavigate = (route, args) {
     navigatorKey.currentState?.pushNamed(route, arguments: args);
+  };
+  NotificationService.onTokenUpdate = (token) async {
+    try {
+      final auth = navigatorKey.currentContext?.read<AuthProvider>();
+      if (auth?.token != null) {
+        final api = ApiService(AppConfig.serverUrl);
+        api.setToken(auth!.token!);
+        await api.post('/api/auth/device', body: {
+          'deviceId': 'android',
+          'platform': 'android',
+          'pushToken': token,
+        });
+      }
+    } catch (_) {}
   };
   try {
     await NotificationService().initialize();

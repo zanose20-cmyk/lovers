@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../providers/api_provider.dart';
+import '../services/auth_provider.dart';
 import '../models/vip_level_model.dart';
 
 class VIPScreen extends StatefulWidget {
@@ -57,11 +58,16 @@ class _VIPScreenState extends State<VIPScreen> {
               color: AppColors.gold.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.diamond, color: AppColors.gold, size: 16),
-                SizedBox(width: 4),
-                Text('VIP 0', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 12)),
+                const Icon(Icons.diamond, color: AppColors.gold, size: 16),
+                const SizedBox(width: 4),
+                Consumer<AuthProvider>(
+                  builder: (_, auth, __) {
+                    final vipLevel = auth.user?['vipLevel'] ?? 0;
+                    return Text('VIP $vipLevel', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 12));
+                  },
+                ),
               ],
             ),
           ),
@@ -224,7 +230,7 @@ class _VIPLevelCard extends StatelessWidget {
               onPressed: () async {
                 final api = context.read<ApiProvider>().api;
                 try {
-                  await api.post('/api/vip/upgrade', body: {'level': level});
+                  await api.post('/api/vip/purchase', body: {'level': level});
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('تم الترقية بنجاح')),

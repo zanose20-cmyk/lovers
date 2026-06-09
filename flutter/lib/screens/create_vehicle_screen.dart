@@ -115,7 +115,7 @@ class _CreateVehicleScreenState extends State<CreateVehicleScreen> {
                   if (_nameController.text.trim().isEmpty) return;
                   final api = context.read<ApiProvider>().api;
                   try {
-                    await api.post('/api/store/vehicles/create', body: {
+                    await api.post('/api/admin/vehicles', body: {
                       'name': _nameController.text,
                       'type': _type,
                       'priceCoins': int.tryParse(_priceController.text) ?? 0,

@@ -83,6 +83,21 @@ class PostsProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> deletePost(String postId) async {
+    try {
+      final ok = await _service.deletePost(postId);
+      if (ok) {
+        _posts.removeWhere((p) => p.postId == postId);
+        notifyListeners();
+      }
+      return ok;
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
   void clearError() {
     _error = null;
     notifyListeners();

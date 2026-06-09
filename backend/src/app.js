@@ -25,6 +25,7 @@ const postsRoutes = require('./routes/posts');
 const vehiclesRoutes = require('./routes/vehicles');
 const vipRoutes = require('./routes/vip');
 const tasksRoutes = require('./routes/tasks');
+const friendsRoutes = require('./routes/friends');
 const adminRoutes = require('./routes/admin');
 
 const app = express();
@@ -61,6 +62,7 @@ app.use('/api/posts', postsRoutes);
 app.use('/api', vehiclesRoutes);
 app.use('/api/vip', vipRoutes);
 app.use('/api/tasks', tasksRoutes);
+app.use('/api/friends', friendsRoutes);
 app.use('/api/admin', apiLimiter, adminRoutes);
 
 // Health

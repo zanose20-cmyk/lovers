@@ -11,8 +11,8 @@ async function requireAuth(req, res, next) {
   try {
     const payload = jwt.verify(token, config.jwtSecret);
     const user = await User.findOne({ userId: payload.userId }).select('banned banReason').lean();
-    if (user && user.banned) {
-      return res.status(403).json({ error: 'Account banned', reason: user.banReason || '' });
+    if (user && user.banned && user.banned.isBanned) {
+      return res.status(403).json({ error: 'Account banned', reason: user.banned.reason || '' });
     }
     req.user = payload;
     next();

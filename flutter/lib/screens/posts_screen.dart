@@ -89,7 +89,22 @@ class _PostsScreenState extends State<PostsScreen> {
                               ],
                             ),
                           ),
-                          const Icon(Icons.more_horiz, color: AppColors.textHint, size: 20),
+                          PopupMenuButton<String>(
+                            icon: const Icon(Icons.more_horiz, color: AppColors.textHint, size: 20),
+                            onSelected: (v) async {
+                              if (v == 'delete' && post.postId != null) {
+                                try {
+                                  await pp.deletePost(post.postId!);
+                                  if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم حذف المنشور')));
+                                } catch (_) {
+                                  if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('فشل الحذف')));
+                                }
+                              }
+                            },
+                            itemBuilder: (_) => [
+                              const PopupMenuItem(value: 'delete', child: Text('حذف المنشور', style: TextStyle(color: AppColors.error))),
+                            ],
+                          ),
                         ],
                       ),
                     ),
@@ -98,7 +113,6 @@ class _PostsScreenState extends State<PostsScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         child: Text(post.content!, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14)),
                       ),
-                    if (post.hashtags != null && post.hashtags!.isNotEmpty)
                     if (post.hashtags != null && (post.hashtags ?? []).isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),

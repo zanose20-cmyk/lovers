@@ -74,6 +74,8 @@ async function purchaseVIP(req, res) {
     
     user.chargeLevel = (user.chargeLevel || 0) - cost;
     user.level = Math.max(user.level || 0, level);
+    user.vipLevel = Math.max(user.vipLevel || 0, level);
+    user.vipExpiresAt = new Date(Date.now() + (vip.durationDays || 30) * 24 * 60 * 60 * 1000);
     user.personalBadge = {
       key: `vip${level}`,
       label: `VIP ${level}`,

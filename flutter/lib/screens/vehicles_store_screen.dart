@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../providers/api_provider.dart';
+import '../services/auth_provider.dart';
 import '../models/vehicle_model.dart';
 
 class VehiclesStoreScreen extends StatefulWidget {
@@ -56,8 +57,14 @@ class _VehiclesStoreScreenState extends State<VehiclesStoreScreen> {
                       children: [
                         const Icon(Icons.directions_car, size: 64, color: AppColors.primary),
                         const SizedBox(height: 8),
-                        const Text('مركبتك الحالية', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-                        const Text('سيارة عادية', style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
+                        const Text('مركبتек الحالية', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                        Consumer<AuthProvider>(
+                          builder: (_, auth, __) {
+                            final vehicles = auth.user?['vehicles'] as List? ?? [];
+                            final current = vehicles.isNotEmpty ? vehicles.last['name'] ?? 'سيارة عادية' : 'سيارة عادية';
+                            return Text(current, style: const TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold));
+                          },
+                        ),
                       ],
                     ),
                   ),

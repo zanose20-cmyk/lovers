@@ -14,7 +14,7 @@ async function getProfile(req, res) {
     delete user.devices;
     delete user.settings;
     
-    res.json(user);
+    res.json({ user });
   } catch (err) {
     logger.error('getProfile error', err);
     res.status(500).json({ error: 'Failed to get profile' });

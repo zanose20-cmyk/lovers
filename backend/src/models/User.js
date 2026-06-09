@@ -53,6 +53,9 @@ const UserSchema = new mongoose.Schema({
   vehicles: [VehicleSchema],
   frames: [BadgeSchema],
 
+  vipLevel: { type: Number, default: 0 },
+  vipExpiresAt: { type: Date },
+
   isVerified: { type: Boolean, default: false },
   verificationBadge: BadgeSchema,
 

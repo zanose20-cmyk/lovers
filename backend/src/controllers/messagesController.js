@@ -104,7 +104,6 @@ async function getConversationsList(req, res) {
       { $limit: 50 }
     ]);
     
-    // Get user details for each conversation
     const userIds = messages.map(m => m._id);
     const users = await User.find({ userId: { $in: userIds } })
       .select('userId displayName avatarUrl isVerified')
@@ -114,12 +113,22 @@ async function getConversationsList(req, res) {
     for (const u of users) {
       userMap[u.userId] = u;
     }
-    
-    const conversations = messages.map(m => ({
-      user: userMap[m._id] || { userId: m._id },
-      lastMessage: m.lastMessage,
-      unread: 0 // TODO: implement unread count
-    }));
+
+    const conversations = [];
+    for (const m of messages) {
+      const otherId = m._id;
+      const unread = await Message.countDocuments({
+        fromUserId: otherId,
+        toUserId: userId,
+        isRead: false,
+        isDeleted: false
+      });
+      conversations.push({
+        user: userMap[otherId] || { userId: otherId },
+        lastMessage: m.lastMessage,
+        unread
+      });
+    }
     
     res.json({ conversations });
   } catch (err) {

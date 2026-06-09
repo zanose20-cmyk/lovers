@@ -37,7 +37,7 @@ class _SearchScreenState extends State<SearchScreen> {
     setState(() => _loading = true);
     final api = context.read<ApiProvider>().api;
     try {
-      final resp = await api.get('/api/search', queryParams: {'q': q});
+      final resp = await api.get('/api/users/search', queryParams: {'q': q});
       if (resp.statusCode == 200) {
         _users = (resp.data['users'] as List?)?.cast<Map<String, dynamic>>() ?? [];
         _hashtags = (resp.data['hashtags'] as List?)?.cast<Map<String, dynamic>>() ?? [];

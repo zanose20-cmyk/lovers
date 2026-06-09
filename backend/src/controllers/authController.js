@@ -19,8 +19,8 @@ async function googleLogin(req, res) {
     };
     const user = await User.findOneAndUpdate({ uid: userData.sub }, { $set: data }, { upsert: true, new: true });
 
-    if (user.banned) {
-      return res.status(403).json({ error: 'Account banned', reason: user.banReason || 'No reason provided' });
+    if (user.banned && user.banned.isBanned) {
+      return res.status(403).json({ error: 'Account banned', reason: user.banned.reason || 'No reason provided' });
     }
 
     const token = jwt.sign({ uid: user.uid, userId: user.userId, roles: user.roles }, config.jwtSecret, { expiresIn: config.jwtExpiresIn });
