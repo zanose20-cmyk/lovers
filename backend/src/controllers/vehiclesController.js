@@ -108,7 +108,36 @@ async function deleteVehicle(req, res) {
   }
 }
 
+async function equipVehicle(req, res) {
+  try {
+    const userId = req.user.userId;
+    const { sku } = req.body;
+    
+    if (!sku) return res.status(400).json({ error: 'SKU required' });
+    
+    const user = await User.findOne({ userId });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    
+    const vehicle = user.vehicles?.find(v => v.sku === sku);
+    if (!vehicle) return res.status(404).json({ error: 'Vehicle not owned' });
+    
+    // Check if expired
+    if (vehicle.expiresAt && new Date(vehicle.expiresAt) < new Date()) {
+      return res.status(400).json({ error: 'Vehicle expired' });
+    }
+    
+    user.currentVehicle = { sku: vehicle.sku, name: vehicle.name, type: vehicle.type };
+    await user.save();
+    
+    res.json({ ok: true, currentVehicle: user.currentVehicle });
+  } catch (err) {
+    logger.error('equipVehicle error', err);
+    res.status(500).json({ error: 'Failed to equip vehicle', details: err.message });
+  }
+}
+
 module.exports = {
   listVehicles, buyVehicle,
-  createVehicle, updateVehicle, deleteVehicle
+  createVehicle, updateVehicle, deleteVehicle,
+  equipVehicle
 };

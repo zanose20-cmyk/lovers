@@ -67,11 +67,12 @@ async function getRoom(req, res) {
 
 async function listRooms(req, res) {
   try {
-    const { type, country, page = 1, limit = 20, sort = '-createdAt' } = req.query;
+    const { type, country, q, page = 1, limit = 20, sort = '-createdAt' } = req.query;
     const filter = {};
     if (type) filter.type = type;
     else filter.type = { $in: ['public', 'vip'] };
     if (country) filter.country = country;
+    if (q) filter.title = { $regex: q, $options: 'i' };
     
     const allowedSorts = ['-createdAt', 'createdAt', '-capacity', 'capacity', 'title'];
     const safeSort = allowedSorts.includes(sort) ? sort : '-createdAt';

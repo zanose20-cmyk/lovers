@@ -191,6 +191,61 @@ async function deletePost(req, res) {
   }
 }
 
+async function followPostAuthor(req, res) {
+  try {
+    const { postId } = req.params;
+    const userId = req.user.userId;
+    
+    const post = await Post.findOne({ postId });
+    if (!post) return res.status(404).json({ error: 'Post not found' });
+    
+    if (post.authorId === userId) {
+      return res.status(400).json({ error: 'Cannot follow yourself' });
+    }
+    
+    post.followers = post.followers || [];
+    if (!post.followers.includes(userId)) {
+      post.followers.push(userId);
+      post.followersCount = (post.followersCount || 0) + 1;
+    }
+    await post.save();
+    
+    // Notify author
+    const Notification = require('../models/Notification');
+    await Notification.create({
+      userId: post.authorId,
+      type: 'follow',
+      title: 'متابعة جديدة',
+      body: `${req.user.displayName} يتابع منشورك`,
+      data: { postId, userId }
+    });
+    
+    res.json({ ok: true, followersCount: post.followersCount });
+  } catch (err) {
+    logger.error('followPostAuthor error', err);
+    res.status(500).json({ error: 'Failed to follow' });
+  }
+}
+
+async function unfollowPostAuthor(req, res) {
+  try {
+    const { postId } = req.params;
+    const userId = req.user.userId;
+    
+    const post = await Post.findOne({ postId });
+    if (!post) return res.status(404).json({ error: 'Post not found' });
+    
+    post.followers = (post.followers || []).filter(id => id !== userId);
+    post.followersCount = Math.max(0, (post.followersCount || 1) - 1);
+    await post.save();
+    
+    res.json({ ok: true, followersCount: post.followersCount });
+  } catch (err) {
+    logger.error('unfollowPostAuthor error', err);
+    res.status(500).json({ error: 'Failed to unfollow' });
+  }
+}
+
 async function getTrendingHashtags(req, res) {
   try {
     const posts = await Post.find({ isDeleted: false })
@@ -219,5 +274,6 @@ async function getTrendingHashtags(req, res) {
 module.exports = {
   createPost, getPost, listPosts,
   likePost, commentOnPost, sharePost, deletePost,
+  followPostAuthor, unfollowPostAuthor,
   getTrendingHashtags
 };
