@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/auth_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common_widgets.dart';
@@ -18,6 +19,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _autoJoin = false;
 
   @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _notifications = prefs.getBool('settings_notifications') ?? true;
+      _sound = prefs.getBool('settings_sound') ?? true;
+      _vibration = prefs.getBool('settings_vibration') ?? true;
+      _autoJoin = prefs.getBool('settings_autoJoin') ?? false;
+    });
+  }
+
+  Future<void> _saveSetting(String key, bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('settings_$key', value);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
 
@@ -31,16 +53,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             const Text('الإشعارات', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textSecondary)),
             const SizedBox(height: 8),
-            _SettingsSwitch(title: 'إشعارات التطبيق', subtitle: 'تلقي الإشعارات العامة', value: _notifications, onChanged: (v) => setState(() => _notifications = v)),
+            _SettingsSwitch(title: 'إشعارات التطبيق', subtitle: 'تلقي الإشعارات العامة', value: _notifications, onChanged: (v) { setState(() => _notifications = v); _saveSetting('notifications', v); }),
             const SizedBox(height: 24),
             const Text('الصوت', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textSecondary)),
             const SizedBox(height: 8),
-            _SettingsSwitch(title: 'صوت الإشعارات', subtitle: 'تشغيل صوت عند الإشعارات', value: _sound, onChanged: (v) => setState(() => _sound = v)),
-            _SettingsSwitch(title: 'اهتزاز', subtitle: 'اهتزاز الجهاز عند الإشعارات', value: _vibration, onChanged: (v) => setState(() => _vibration = v)),
+            _SettingsSwitch(title: 'صوت الإشعارات', subtitle: 'تشغيل صوت عند الإشعارات', value: _sound, onChanged: (v) { setState(() => _sound = v); _saveSetting('sound', v); }),
+            _SettingsSwitch(title: 'اهتزاز', subtitle: 'اهتزاز الجهاز عند الإشعارات', value: _vibration, onChanged: (v) { setState(() => _vibration = v); _saveSetting('vibration', v); }),
             const SizedBox(height: 24),
             const Text('الغرف', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textSecondary)),
             const SizedBox(height: 8),
-            _SettingsSwitch(title: 'الانضمام التلقائي', subtitle: 'الدخول التلقائي للغرفة عند الدعوة', value: _autoJoin, onChanged: (v) => setState(() => _autoJoin = v)),
+            _SettingsSwitch(title: 'الانضمام التلقائي', subtitle: 'الدخول التلقائي للغرفة عند الدعوة', value: _autoJoin, onChanged: (v) { setState(() => _autoJoin = v); _saveSetting('autoJoin', v); }),
             const SizedBox(height: 24),
             const Text('الحساب', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textSecondary)),
             const SizedBox(height: 8),

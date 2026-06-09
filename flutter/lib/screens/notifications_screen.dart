@@ -27,7 +27,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         title: const Text('الإشعارات'),
         actions: [
           TextButton(
-            onPressed: () => context.read<NotificationsProvider>().markAllRead(),
+            onPressed: () async {
+              try {
+                await context.read<NotificationsProvider>().markAllRead();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم تحديد الكل كمقروء')));
+                }
+              } catch (_) {}
+            },
             child: const Text('قراءة الكل', style: TextStyle(color: AppColors.primary, fontSize: 13)),
           ),
         ],

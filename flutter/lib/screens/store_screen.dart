@@ -89,15 +89,30 @@ void _sendGiftDialog(BuildContext context, GiftModel gift) {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(ctx),
+          onPressed: () { controller.dispose(); Navigator.pop(ctx); },
           child: const Text('إلغاء', style: TextStyle(color: AppColors.textHint)),
         ),
         TextButton(
-          onPressed: () {
+          onPressed: () async {
             final userId = controller.text.trim();
             if (userId.isEmpty) return;
-            context.read<GiftsProvider>().sendGift(userId, gift.sku ?? '', 1);
-            Navigator.pop(ctx);
+            try {
+              await context.read<GiftsProvider>().sendGift(userId, gift.sku ?? '', 1);
+              if (ctx.mounted) {
+                Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('تم إرسال الهدية')),
+                );
+              }
+            } catch (_) {
+              if (ctx.mounted) {
+                Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('فشل إرسال الهدية')),
+                );
+              }
+            }
+            controller.dispose();
           },
           child: const Text('إرسال', style: TextStyle(color: AppColors.primary)),
         ),
@@ -145,7 +160,12 @@ class _GiftGrid extends StatelessWidget {
                       children: [
                         Center(
                           child: gift.imageUrl != null
-                              ? Icon(Icons.card_giftcard, size: 50, color: AppColors.primary)
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.network(gift.imageUrl!, width: 60, height: 60, fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => const Icon(Icons.card_giftcard, size: 50, color: AppColors.primary),
+                                  ),
+                                )
                               : const Icon(Icons.card_giftcard, size: 50, color: AppColors.primary),
                         ),
                         if (gift.type == 'animated' || gift.rarity == 'legendary')

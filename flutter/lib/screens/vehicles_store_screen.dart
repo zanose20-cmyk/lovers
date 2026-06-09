@@ -92,22 +92,35 @@ class _VehiclesStoreScreenState extends State<VehiclesStoreScreen> {
                               SizedBox(
                                 width: double.infinity,
                                 child: ElevatedButton(
-                                  onPressed: () async {
-                                    final api = context.read<ApiProvider>().api;
-                                    try {
-                                      await api.post('/api/store/vehicles/buy', body: {'sku': v.sku});
-                                      if (context.mounted) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(content: Text('تم الشراء بنجاح')),
-                                        );
-                                      }
-                                    } catch (_) {
-                                      if (context.mounted) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(content: Text('فشل الشراء')),
-                                        );
-                                      }
-                                    }
+                                  onPressed: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (ctx) => AlertDialog(
+                                        backgroundColor: AppColors.backgroundCard,
+                                        title: const Text('تأكيد الشراء', style: TextStyle(color: AppColors.textPrimary)),
+                                        content: Text('هل تريد شراء ${v.name} بـ ${v.priceCoins ?? 0} عملة؟', style: const TextStyle(color: AppColors.textSecondary)),
+                                        actions: [
+                                          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('إلغاء', style: TextStyle(color: AppColors.textHint))),
+                                          TextButton(
+                                            onPressed: () async {
+                                              Navigator.pop(ctx);
+                                              try {
+                                                final api = context.read<ApiProvider>().api;
+                                                await api.post('/api/store/vehicles/buy', body: {'sku': v.sku});
+                                                if (context.mounted) {
+                                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم الشراء بنجاح')));
+                                                }
+                                              } catch (_) {
+                                                if (context.mounted) {
+                                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('فشل الشراء')));
+                                                }
+                                              }
+                                            },
+                                            child: const Text('شراء', style: TextStyle(color: AppColors.primary)),
+                                          ),
+                                        ],
+                                      ),
+                                    );
                                   },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppColors.primary.withValues(alpha: 0.15),
