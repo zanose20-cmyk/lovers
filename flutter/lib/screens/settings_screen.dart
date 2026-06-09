@@ -69,6 +69,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
             InfoRow(label: 'اسم المستخدم', value: auth.user?['displayName'] ?? 'زائر'),
             InfoRow(label: 'معرف المستخدم', value: auth.user?['userId'] ?? '-'),
             InfoRow(label: 'المستوى', value: '${auth.user?['level'] ?? 1}'),
+            if ((auth.user?['roles'] as List?)?.contains('admin') == true || (auth.user?['roles'] as List?)?.contains('superadmin') == true) ...[
+              const SizedBox(height: 16),
+              const Text('الإدارة', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textSecondary)),
+              const SizedBox(height: 8),
+              ListTile(
+                leading: const Icon(Icons.admin_panel_settings, color: Colors.amber),
+                title: const Text('لوحة التحكم', style: TextStyle(color: AppColors.textPrimary)),
+                subtitle: const Text('إدارة المستخدمين والغرف والهدايا', style: TextStyle(color: AppColors.textHint, fontSize: 11)),
+                trailing: const Icon(Icons.chevron_left, color: AppColors.textHint),
+                tileColor: AppColors.backgroundCard,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                onTap: () => Navigator.pushNamed(context, '/admin'),
+              ),
+            ],
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,

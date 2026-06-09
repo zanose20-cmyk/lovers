@@ -34,6 +34,10 @@ import 'screens/create_vehicle_screen.dart';
 import 'screens/friend_requests_screen.dart';
 import 'screens/search_screen.dart';
 import 'screens/voice_room_screen.dart';
+import 'screens/admin_dashboard_screen.dart';
+import 'screens/admin_users_screen.dart';
+import 'screens/admin_rooms_screen.dart';
+import 'screens/badge_shop_screen.dart';
 import 'services/firebase_service.dart';
 import 'services/notification_service.dart';
 import 'providers/api_provider.dart';
@@ -177,6 +181,12 @@ class LoversApp extends StatelessWidget {
               roomName: args as String? ?? 'غرفة',
             );
           },
+          '/admin': (ctx) => const AdminDashboardScreen(),
+          '/admin-users': (ctx) => const AdminUsersScreen(),
+          '/admin-rooms': (ctx) => const AdminRoomsScreen(),
+          '/admin-gifts': (ctx) => const BadgeShopScreen(),
+          '/admin-vehicles': (ctx) => const VehiclesStoreScreen(),
+          '/badge-shop': (ctx) => const BadgeShopScreen(),
         };
 
         final builder = routes[settings.name];
