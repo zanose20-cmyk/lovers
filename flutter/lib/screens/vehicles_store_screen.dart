@@ -31,7 +31,7 @@ class _VehiclesStoreScreenState extends State<VehiclesStoreScreen> {
         _vehicles = (list as List).map((e) => VehicleModel.fromJson(e)).toList();
       }
     } catch (_) {}
-    setState(() => _loading = false);
+    if (mounted) setState(() => _loading = false);
   }
 
   @override

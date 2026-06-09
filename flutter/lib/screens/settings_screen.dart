@@ -88,7 +88,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         onPressed: () {
                           auth.logout();
                           Navigator.pop(ctx);
-                          Navigator.pushReplacementNamed(context, '/login');
+                          if (context.mounted) Navigator.pushReplacementNamed(context, '/login');
                         },
                         child: const Text('تسجيل الخروج', style: TextStyle(color: AppColors.error)),
                       ),

@@ -101,17 +101,17 @@ class _PostsScreenState extends State<PostsScreen> {
                         _PostAction(
                           icon: Icons.favorite_border,
                           label: '${post.likesCount ?? 0}',
-                          onTap: () => pp.likePost(post.postId!),
+                          onTap: () { if (post.postId != null) pp.likePost(post.postId!); },
                         ),
                         _PostAction(
                           icon: Icons.chat_bubble_outline,
                           label: '${post.commentsCount ?? 0}',
-                          onTap: () => _showCommentDialog(context, post.postId!),
+                          onTap: () { if (post.postId != null) _showCommentDialog(context, post.postId!); },
                         ),
                         _PostAction(
                           icon: Icons.share_outlined,
                           label: '${post.sharesCount ?? 0}',
-                          onTap: () => pp.sharePost(post.postId!),
+                          onTap: () { if (post.postId != null) pp.sharePost(post.postId!); },
                         ),
                       ],
                     ),

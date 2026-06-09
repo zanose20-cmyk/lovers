@@ -184,7 +184,7 @@ class _TaskCard extends StatelessWidget {
             onTap: completed && !(task.claimed ?? false)
                 ? () async {
                     try {
-                      final ok = await context.read<TasksProvider>().claimReward(task.taskId!);
+                      final ok = task.taskId != null ? await context.read<TasksProvider>().claimReward(task.taskId!) : false;
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text(ok ? 'تم استلام المكافأة' : 'فشل استلام المكافأة')),

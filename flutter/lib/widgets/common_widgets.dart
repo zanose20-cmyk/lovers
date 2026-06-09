@@ -87,7 +87,7 @@ class UserAvatar extends StatelessWidget {
           backgroundImage: imageUrl != null ? NetworkImage(imageUrl!) as ImageProvider : null,
           child: imageUrl == null
               ? Text(
-                  (name ?? '?')[0].toUpperCase(),
+                  (name?.isNotEmpty == true ? name![0] : '?').toUpperCase(),
                   style: TextStyle(color: AppColors.textHint, fontSize: radius * 0.7, fontWeight: FontWeight.bold),
                 )
               : null,

@@ -533,7 +533,8 @@ class _ProfileTab extends StatelessWidget {
           ElevatedButton(
             onPressed: () {
               auth.logout();
-              Navigator.pushReplacementNamed(context, '/login');
+              Navigator.pop(ctx);
+              if (context.mounted) Navigator.pushReplacementNamed(context, '/login');
             },
             child: const Text('تسجيل الخروج'),
           ),

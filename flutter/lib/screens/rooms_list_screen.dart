@@ -156,7 +156,7 @@ class _RoomList extends StatelessWidget {
                   ),
                   if ((room.seats?.where((s) => s.userId != null).length ?? 0) > 5) ...[
                     const SizedBox(width: 8),
-                    Text('+${room.seats!.where((s) => s.userId != null).length - 5}', style: const TextStyle(color: AppColors.textHint, fontSize: 12)),
+                    Text('+${(room.seats?.where((s) => s.userId != null).length ?? 0) - 5}', style: const TextStyle(color: AppColors.textHint, fontSize: 12)),
                   ],
                 ],
               ),

@@ -52,7 +52,9 @@ async function searchUsers(req, res) {
     const { q, page = 1, limit = 20 } = req.query;
     if (!q) return res.status(400).json({ error: 'Query required' });
     
-    const regex = new RegExp(q, 'i');
+    const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(escaped, 'i');
+    const cappedLimit = Math.min(parseInt(limit) || 20, 50);
     const users = await User.find({
       $or: [
         { displayName: regex },
@@ -61,8 +63,8 @@ async function searchUsers(req, res) {
       ]
     })
     .select('userId displayName avatarUrl level country isVerified')
-    .skip((page - 1) * limit)
-    .limit(parseInt(limit))
+    .skip((page - 1) * cappedLimit)
+    .limit(cappedLimit)
     .lean();
     
     const total = await User.countDocuments({

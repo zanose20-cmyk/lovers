@@ -92,7 +92,7 @@ class _JitsiRoomScreenState extends State<JitsiRoomScreen> {
         _socketService.connect(AppConfig.serverUrl, token);
         _socketService.on('gift.sent', _onCallEvent);
         _socketService.on('roomGift', _onCallEvent);
-        _socketService.on('call.ended', (_) => Navigator.pop(context));
+        _socketService.on('call.ended', (_) { if (mounted) Navigator.pop(context); });
       }
     } catch (e) {}
   }
@@ -190,6 +190,7 @@ class _JitsiRoomScreenState extends State<JitsiRoomScreen> {
   }
 
   void _onCallEvent(dynamic payload) {
+    if (!mounted) return;
     try {
       setState(() {
         _currentGift = Map.from(payload as Map);

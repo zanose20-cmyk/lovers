@@ -40,8 +40,7 @@ function initSocket(server) {
       }
       next();
     } catch (err) {
-      // Allow connection even without auth (guest)
-      next();
+      next(new Error('Authentication required'));
     }
   });
 
@@ -174,9 +173,15 @@ function initSocket(server) {
     });
 
     // --- Admin Events ---
-    socket.on('admin:kick', ({ roomId, userId }) => {
+    socket.on('admin:kick', async ({ roomId, userId }) => {
+      if (!socket.userId) return socket.emit('error', { message: 'Unauthorized' });
+      const Room = require('../models/Room');
+      const room = await Room.findOne({ roomId });
+      if (!room) return socket.emit('error', { message: 'Room not found' });
+      const isOwner = room.ownerId === socket.userId;
+      const isAdmin = (socket.roles || []).includes('admin');
+      if (!isOwner && !isAdmin) return socket.emit('error', { message: 'Not authorized' });
       io.to(roomId).emit('admin:kicked', { userId });
-      // Force disconnect the kicked user's socket from room
       const sockets = io.sockets.adapter.rooms.get(roomId);
       if (sockets) {
         for (const socketId of sockets) {
@@ -189,7 +194,14 @@ function initSocket(server) {
       }
     });
 
-    socket.on('admin:ban', ({ roomId, userId }) => {
+    socket.on('admin:ban', async ({ roomId, userId }) => {
+      if (!socket.userId) return socket.emit('error', { message: 'Unauthorized' });
+      const Room = require('../models/Room');
+      const room = await Room.findOne({ roomId });
+      if (!room) return socket.emit('error', { message: 'Room not found' });
+      const isOwner = room.ownerId === socket.userId;
+      const isAdmin = (socket.roles || []).includes('admin');
+      if (!isOwner && !isAdmin) return socket.emit('error', { message: 'Not authorized' });
       io.to(roomId).emit('admin:banned', { userId });
     });
 

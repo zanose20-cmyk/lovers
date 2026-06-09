@@ -61,7 +61,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
               return GestureDetector(
                 onTap: () {
-                  if (isUnread) np.markRead(notif.notifId!);
+                  if (isUnread && notif.notifId != null) np.markRead(notif.notifId!);
                 },
                 child: Container(
                   margin: const EdgeInsets.only(bottom: 8),

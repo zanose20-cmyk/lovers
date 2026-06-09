@@ -95,6 +95,8 @@ class LoversApp extends StatelessWidget {
       title: 'Lovers',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
+      locale: const Locale('ar'),
+      supportedLocales: const [Locale('ar')],
       initialRoute: '/splash',
       onGenerateRoute: (settings) {
         final routes = <String, WidgetBuilder>{
@@ -106,12 +108,17 @@ class LoversApp extends StatelessWidget {
           '/edit-profile': (ctx) => const EditProfileScreen(),
           '/rooms-list': (ctx) => const RoomsListScreen(),
           '/create-room': (ctx) => const CreateRoomScreen(),
-          '/room': (ctx) => RoomScreen(roomId: settings.arguments as String),
+          '/room': (ctx) {
+            final roomId = settings.arguments as String?;
+            if (roomId == null) return const HomeScreen();
+            return RoomScreen(roomId: roomId);
+          },
           '/jitsi-room': (ctx) {
-            final args = settings.arguments as Map<String, dynamic>;
+            final args = settings.arguments as Map<String, dynamic>?;
+            if (args == null) return const HomeScreen();
             return JitsiRoomScreen(
-              serverUrl: args['server'] as String,
-              roomName: args['roomName'] as String,
+              serverUrl: args['server'] as String? ?? 'https://meet.jit.si',
+              roomName: args['roomName'] as String? ?? 'غرفة',
               displayName: args['displayName'] as String? ?? 'مستخدم',
               token: args['token'] as String?,
             );
@@ -121,7 +128,11 @@ class LoversApp extends StatelessWidget {
           '/wallet': (ctx) => const WalletScreen(),
           '/vip': (ctx) => const VIPScreen(),
           '/messages': (ctx) => const MessagesScreen(),
-          '/conversation': (ctx) => ConversationScreen(userId: settings.arguments as String),
+          '/conversation': (ctx) {
+            final userId = settings.arguments as String?;
+            if (userId == null) return const HomeScreen();
+            return ConversationScreen(userId: userId);
+          },
           '/posts': (ctx) => const PostsScreen(),
           '/create-post': (ctx) => const CreatePostScreen(),
           '/agencies': (ctx) => const AgenciesScreen(),

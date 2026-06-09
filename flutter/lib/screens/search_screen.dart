@@ -43,7 +43,7 @@ class _SearchScreenState extends State<SearchScreen> {
         _hashtags = (resp.data['hashtags'] as List?)?.cast<Map<String, dynamic>>() ?? [];
       }
     } catch (_) {}
-    setState(() => _loading = false);
+    if (mounted) setState(() => _loading = false);
   }
 
   @override

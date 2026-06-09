@@ -32,7 +32,7 @@ class _FriendRequestsScreenState extends State<FriendRequestsScreen> with Single
         _sent = (resp.data['sent'] as List?)?.cast<Map<String, dynamic>>() ?? [];
       }
     } catch (_) {}
-    setState(() => _loading = false);
+    if (mounted) setState(() => _loading = false);
   }
 
   Future<void> _accept(String requestId) async {
@@ -40,7 +40,7 @@ class _FriendRequestsScreenState extends State<FriendRequestsScreen> with Single
     try {
       await api.post('/api/friends/accept', body: {'requestId': requestId});
       _received.removeWhere((r) => r['id'] == requestId);
-      setState(() {});
+      if (mounted) setState(() {});
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم قبول الطلب')));
     } catch (_) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('فشل قبول الطلب')));
@@ -52,7 +52,7 @@ class _FriendRequestsScreenState extends State<FriendRequestsScreen> with Single
     try {
       await api.post('/api/friends/reject', body: {'requestId': requestId});
       _received.removeWhere((r) => r['id'] == requestId);
-      setState(() {});
+      if (mounted) setState(() {});
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم رفض الطلب')));
     } catch (_) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('فشل رفض الطلب')));
@@ -64,7 +64,7 @@ class _FriendRequestsScreenState extends State<FriendRequestsScreen> with Single
     try {
       await api.post('/api/friends/cancel', body: {'requestId': requestId});
       _sent.removeWhere((r) => r['id'] == requestId);
-      setState(() {});
+      if (mounted) setState(() {});
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم إلغاء الطلب')));
     } catch (_) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('فشل إلغاء الطلب')));

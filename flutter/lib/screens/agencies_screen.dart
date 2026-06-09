@@ -83,9 +83,13 @@ class _AgenciesScreenState extends State<AgenciesScreen> {
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: GestureDetector(
-                            onTap: () {
-                              if (agency.agencyId != null) {
-                                ap.joinAgency(agency.agencyId!);
+                            onTap: () async {
+                              if (agency.agencyId == null) return;
+                              try {
+                                await ap.joinAgency(agency.agencyId!);
+                                if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم الانضمام للوكالة')));
+                              } catch (_) {
+                                if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('فشل الانضمام')));
                               }
                             },
                             child: const Text('انضمام', style: TextStyle(color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.bold)),

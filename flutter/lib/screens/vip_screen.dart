@@ -41,7 +41,7 @@ class _VIPScreenState extends State<VIPScreen> {
         _levels = data.map((e) => VIPLevelModel.fromJson(e)).toList();
       }
     } catch (_) {}
-    setState(() => _loading = false);
+    if (mounted) setState(() => _loading = false);
   }
 
   @override
@@ -93,7 +93,7 @@ class _VIPScreenState extends State<VIPScreen> {
                             const SizedBox(height: 12),
                             Text('VIP ${vip.level} - ${vip.name ?? ''}', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
                             const SizedBox(height: 8),
-                            if (vip.priceCoins != null && vip.priceCoins! > 0)
+                            if (vip.priceCoins != null && (vip.priceCoins ?? 0) > 0)
                               Text('${vip.priceCoins} عملة', style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14)),
                           ],
                         ),

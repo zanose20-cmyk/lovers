@@ -94,7 +94,7 @@ class _VoiceRoomScreenState extends State<VoiceRoomScreen> {
         _socketService.connect(AppConfig.serverUrl, token);
         _socketService.on('gift.sent', _onGiftReceived);
         _socketService.on('roomGift', _onGiftReceived);
-        _socketService.on('call.ended', (_) => Navigator.pop(context));
+        _socketService.on('call.ended', (_) { if (mounted) Navigator.pop(context); });
       }
     } catch (e) {}
   }
@@ -198,6 +198,7 @@ class _VoiceRoomScreenState extends State<VoiceRoomScreen> {
   }
 
   void _onGiftReceived(dynamic payload) {
+    if (!mounted) return;
     try {
       setState(() {
         _currentGift = Map.from(payload as Map);

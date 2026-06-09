@@ -36,6 +36,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       try {
         final api = context.read<ApiProvider>().api;
         final resp = await api.get('/api/users/${widget.userId}');
+        if (!mounted) return;
         if (resp.statusCode == 200) {
           _profile = resp.data['user'] as Map<String, dynamic>?;
         }
@@ -48,7 +49,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
       _loading = false;
     }
-    setState(() {});
+    if (mounted) setState(() {});
   }
 
   Future<void> _toggleFollow() async {
@@ -57,7 +58,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       await api.post('/api/users/${widget.userId}/${_isFollowing ? 'follow' : 'unfollow'}');
     } catch (_) {
-      setState(() => _isFollowing = !_isFollowing);
+      if (mounted) setState(() => _isFollowing = !_isFollowing);
     }
   }
 

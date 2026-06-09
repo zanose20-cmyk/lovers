@@ -67,11 +67,11 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         }
       }
     } on PlatformException catch (e) {
-      setState(() => _error = 'Google: ${e.message}');
+      if (mounted) setState(() => _error = 'Google: ${e.message}');
     } on SocketException catch (e) {
-      setState(() => _error = 'نت مشكلة: ${e.message}');
+      if (mounted) setState(() => _error = 'نت مشكلة: ${e.message}');
     } catch (e) {
-      setState(() => _error = '$e');
+      if (mounted) setState(() => _error = '$e');
     }
     if (mounted) setState(() => _loading = false);
   }
@@ -82,9 +82,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       if (result == null) return;
       await _handleGoogleResult(result);
     } on PlatformException catch (e) {
-      setState(() => _error = 'Google: ${e.message}');
+      if (mounted) setState(() => _error = 'Google: ${e.message}');
     } catch (e) {
-      setState(() => _error = '$e');
+      if (mounted) setState(() => _error = '$e');
     }
   }
 
