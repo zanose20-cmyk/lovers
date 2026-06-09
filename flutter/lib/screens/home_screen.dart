@@ -109,6 +109,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   Widget _buildNavItem(int index, IconData icon, String label) {
     final isSelected = _currentIndex == index;
+    int badgeCount = 0;
+    if (index == 3) {
+      try {
+        final mp = context.read<MessagesProvider>();
+        badgeCount = mp.unreadCount;
+      } catch (_) {}
+    }
     return GestureDetector(
       onTap: () {
         HapticFeedback.lightImpact();
@@ -127,10 +134,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              color: isSelected ? AppColors.primary : AppColors.textHint,
-              size: 24,
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Icon(
+                  icon,
+                  color: isSelected ? AppColors.primary : AppColors.textHint,
+                  size: 24,
+                ),
+                if (badgeCount > 0)
+                  Positioned(
+                    top: -4, right: -8,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(color: AppColors.error, shape: BoxShape.circle),
+                      child: Text('$badgeCount', style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+              ],
             ),
             const SizedBox(height: 4),
             Text(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_provider.dart';
 import '../theme/app_theme.dart';
@@ -117,6 +118,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       appBar: AppBar(
         title: Text(_isOwner ? 'الملف الشخصي' : name),
         actions: [
+          if (!_isOwner)
+            IconButton(
+              icon: const Icon(Icons.share, color: AppColors.textPrimary, size: 20),
+              onPressed: () {
+                Clipboard.setData(ClipboardData(text: 'https://lovers.app/user/${widget.userId}'));
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم نسخ رابط الملف الشخصي')));
+              },
+            ),
           if (!_isOwner)
             PopupMenuButton<String>(
               icon: const Icon(Icons.more_vert, color: AppColors.textPrimary),
