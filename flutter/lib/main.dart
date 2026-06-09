@@ -33,7 +33,6 @@ import 'screens/create_vehicle_screen.dart';
 import 'screens/friend_requests_screen.dart';
 import 'screens/search_screen.dart';
 import 'screens/voice_room_screen.dart';
-import 'services/auth_provider.dart';
 import 'services/firebase_service.dart';
 import 'services/notification_service.dart';
 import 'providers/api_provider.dart';
@@ -65,7 +64,7 @@ void main() async {
       if (auth?.token != null) {
         final api = ApiService(AppConfig.serverUrl);
         api.setToken(auth!.token!);
-        await api.post('/api/auth/device', body: {
+        await api.post('/api/auth/devices/register', body: {
           'deviceId': 'android',
           'platform': 'android',
           'pushToken': token,
@@ -180,7 +179,26 @@ class LoversApp extends StatelessWidget {
 
         final builder = routes[settings.name];
         if (builder != null) {
-          return MaterialPageRoute(builder: builder, settings: settings);
+          return PageRouteBuilder(
+            settings: settings,
+            pageBuilder: (ctx, animation, secondaryAnimation) => builder(ctx),
+            transitionsBuilder: (ctx, animation, secondaryAnimation, child) {
+              final tween = Tween(begin: 0.0, end: 1.0).chain(CurveTween(curve: Curves.easeInOut));
+              final fadeAnimation = animation.drive(tween);
+              final slideAnimation = Tween<Offset>(
+                begin: const Offset(0.05, 0),
+                end: Offset.zero,
+              ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic));
+              return FadeTransition(
+                opacity: fadeAnimation,
+                child: SlideTransition(
+                  position: slideAnimation,
+                  child: child,
+                ),
+              );
+            },
+            transitionDuration: const Duration(milliseconds: 350),
+          );
         }
         return MaterialPageRoute(builder: (ctx) => const HomeScreen());
       },

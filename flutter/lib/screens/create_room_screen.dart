@@ -41,7 +41,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
         'maxCapacity': _capacity,
       });
 
-      if (room != null && mounted) {
+      if (room != null && room.roomId != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('تم إنشاء الغرفة ${_titleController.text}')));
         Navigator.pushNamed(context, '/room', arguments: room.roomId);
       } else if (mounted) {
@@ -96,7 +96,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(icons[t], color: _roomType == t ? AppColors.primary : AppColors.textHint, size: 18),
+                        Icon(icons[t] ?? Icons.help_outline, color: _roomType == t ? AppColors.primary : AppColors.textHint, size: 18),
                         const SizedBox(width: 6),
                         Text(labels[t]!, style: TextStyle(color: _roomType == t ? AppColors.primary : AppColors.textHint)),
                       ],

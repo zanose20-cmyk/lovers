@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_provider.dart';
 import '../theme/app_theme.dart';
@@ -15,8 +16,9 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   int _currentIndex = 0;
+  late final AnimationController _navAnimController;
 
   final List<Widget> _pages = [
     const _HomePage(),
@@ -29,6 +31,10 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _navAnimController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    )..forward();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<RoomsProvider>().loadRooms(type: 'public');
       context.read<TasksProvider>().loadDailyTasks();
@@ -37,39 +43,139 @@ class _HomeScreenState extends State<HomeScreen> {
       if (auth.user != null) {
         final chargeLevel = auth.user!['chargeLevel'];
         context.read<WalletProvider>().setBalance((chargeLevel as num?)?.toInt() ?? 0);
-        context.read<MessagesProvider>().listenForMessages(auth.user!['userId']);
+        final userId = auth.user!['userId'] as String?;
+        if (userId != null) {
+          context.read<MessagesProvider>().listenForMessages(userId);
+        }
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _navAnimController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundDark,
-      body: _pages[_currentIndex],
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        transitionBuilder: (child, animation) => FadeTransition(
+          opacity: animation,
+          child: child,
+        ),
+        child: _pages[_currentIndex],
+      ),
       bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [AppColors.backgroundDark, AppColors.backgroundCard],
+            colors: [
+              AppColors.backgroundCard.withValues(alpha: 0.95),
+              AppColors.backgroundDark,
+            ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
-        ),
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (index) => setState(() => _currentIndex = index),
-          backgroundColor: Colors.transparent,
-          selectedItemColor: AppColors.primary,
-          unselectedItemColor: AppColors.textHint,
-          type: BottomNavigationBarType.fixed,
-          elevation: 0,
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: 'الرئيسية'),
-            BottomNavigationBarItem(icon: Icon(Icons.mic_rounded), label: 'الغرف'),
-            BottomNavigationBarItem(icon: Icon(Icons.explore_rounded), label: 'استكشاف'),
-            BottomNavigationBarItem(icon: Icon(Icons.chat_rounded), label: 'المحادثات'),
-            BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: 'حسابي'),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 20,
+              spreadRadius: -5,
+              offset: const Offset(0, -5),
+            ),
           ],
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildNavItem(0, Icons.home_rounded, 'الرئيسية'),
+                _buildNavItem(1, Icons.mic_rounded, 'الغرف'),
+                _buildExploreButton(2),
+                _buildNavItem(3, Icons.chat_rounded, 'المحادثات'),
+                _buildNavItem(4, Icons.person_rounded, 'حسابي'),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavItem(int index, IconData icon, String label) {
+    final isSelected = _currentIndex == index;
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        setState(() => _currentIndex = index);
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: EdgeInsets.symmetric(
+          horizontal: isSelected ? 16 : 12,
+          vertical: 8,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary.withValues(alpha: 0.15) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? AppColors.primary : AppColors.textHint,
+              size: 24,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? AppColors.primary : AppColors.textHint,
+                fontSize: 10,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExploreButton(int index) {
+    final isSelected = _currentIndex == index;
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.mediumImpact();
+        setState(() => _currentIndex = index);
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: 56,
+        height: 56,
+        decoration: BoxDecoration(
+          gradient: isSelected ? const LinearGradient(
+            colors: AppColors.premiumGradient,
+          ) : null,
+          color: isSelected ? null : AppColors.backgroundCard,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: isSelected ? [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.4),
+              blurRadius: 12,
+              spreadRadius: 2,
+            ),
+          ] : [],
+        ),
+        child: Icon(
+          Icons.explore_rounded,
+          color: Colors.white,
+          size: 28,
         ),
       ),
     );

@@ -25,7 +25,7 @@ class NotificationsProvider extends ChangeNotifier {
       if (resp.statusCode == 200) {
         final list = resp.data['notifications'] as List? ?? [];
         _notifications = list.map((e) => NotificationModel.fromJson(e)).toList();
-        _unread = resp.data['unread'] ?? 0;
+        _unread = (resp.data['unread'] as num?)?.toInt() ?? 0;
       }
     } catch (e) {
       _error = e.toString();

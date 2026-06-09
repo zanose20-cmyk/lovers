@@ -25,7 +25,10 @@ const VIPLevelSchema = new mongoose.Schema({
     minDaysActive: { type: Number, default: 0 }
   },
   priceCoins: { type: Number, default: 0 },
+  priceCoins3Months: { type: Number, default: 0 },
+  priceCoins12Months: { type: Number, default: 0 },
   priceDiamonds: { type: Number, default: 0 },
+  durationDays: { type: Number, default: 30 },
   isActive: { type: Boolean, default: true },
   createdAt: { type: Date, default: Date.now }
 });

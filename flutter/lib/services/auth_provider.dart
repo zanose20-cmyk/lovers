@@ -58,6 +58,9 @@ class AuthProvider extends ChangeNotifier {
 
   void setUser(Map<String, dynamic> u) {
     _user = u;
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setString('user_data', jsonEncode(u));
+    });
     notifyListeners();
   }
 

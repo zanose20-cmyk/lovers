@@ -13,7 +13,10 @@ const vipData = [
     color: '#CD7F32',
     benefits: ['شارة VIP 1', 'إطار VIP 1', 'تأثير دخول بسيط', 'تحديد أولوية الدخول للغرف'],
     requirements: { minChargeLevel: 100, minActivityLevel: 1, minDaysActive: 1 },
-    priceCoins: 100
+    priceCoins: 100,
+    priceCoins3Months: 90,
+    priceCoins12Months: 70,
+    durationDays: 30,
   },
   {
     level: 2,
@@ -23,7 +26,10 @@ const vipData = [
     color: '#C0C0C0',
     benefits: ['شارة VIP 2', 'إطار VIP 2', 'تأثير دخول فضي', 'هدية ترحيب يومية', '50% خصم على الهدايا العادية'],
     requirements: { minChargeLevel: 500, minActivityLevel: 5, minDaysActive: 3 },
-    priceCoins: 500
+    priceCoins: 500,
+    priceCoins3Months: 450,
+    priceCoins12Months: 350,
+    durationDays: 30,
   },
   {
     level: 3,
@@ -33,7 +39,10 @@ const vipData = [
     color: '#FFD700',
     benefits: ['شارة VIP 3', 'إطار VIP 3', 'تأثير دخول ذهبي', 'هدية يومية بقيمة أعلى', 'دخول VIP للغرف الممتلئة'],
     requirements: { minChargeLevel: 1500, minActivityLevel: 10, minDaysActive: 7 },
-    priceCoins: 1500
+    priceCoins: 1500,
+    priceCoins3Months: 1350,
+    priceCoins12Months: 1050,
+    durationDays: 30,
   },
   {
     level: 4,
@@ -43,7 +52,10 @@ const vipData = [
     color: '#E5E4E2',
     benefits: ['شارة VIP 4', 'إطار VIP 4', 'تأثير دخول بلاتيني', 'إنشاء غرف VIP', 'أولوية الدعم الفني'],
     requirements: { minChargeLevel: 3000, minActivityLevel: 20, minDaysActive: 14 },
-    priceCoins: 3000
+    priceCoins: 3000,
+    priceCoins3Months: 2700,
+    priceCoins12Months: 2100,
+    durationDays: 30,
   },
   {
     level: 5,
@@ -53,7 +65,10 @@ const vipData = [
     color: '#B9F2FF',
     benefits: ['شارة VIP 5', 'إطار VIP 5', 'تأثير دخول ماسي', 'إهداء 3 هدايا مجانية يومياً', 'مقعد VIP محجوز'],
     requirements: { minChargeLevel: 6000, minActivityLevel: 40, minDaysActive: 21 },
-    priceCoins: 6000
+    priceCoins: 6000,
+    priceCoins3Months: 5400,
+    priceCoins12Months: 4200,
+    durationDays: 30,
   },
   {
     level: 6,
@@ -63,7 +78,10 @@ const vipData = [
     color: '#E0115F',
     benefits: ['شارة VIP 6', 'إطار VIP 6', 'تأثير دخول ياقوتي', 'مضاعفة الهدايا المستقبلة', 'تحكم في الغرفة كمشرف'],
     requirements: { minChargeLevel: 12000, minActivityLevel: 60, minDaysActive: 30 },
-    priceCoins: 12000
+    priceCoins: 12000,
+    priceCoins3Months: 10800,
+    priceCoins12Months: 8400,
+    durationDays: 30,
   },
   {
     level: 7,
@@ -73,7 +91,10 @@ const vipData = [
     color: '#50C878',
     benefits: ['شارة VIP 7', 'إطار VIP 7', 'تأثير دخول زمردي', 'هدية أسبوعية خاصة', 'مقعد حصري في جميع الغرف'],
     requirements: { minChargeLevel: 25000, minActivityLevel: 80, minDaysActive: 45 },
-    priceCoins: 25000
+    priceCoins: 25000,
+    priceCoins3Months: 22500,
+    priceCoins12Months: 17500,
+    durationDays: 30,
   },
   {
     level: 8,
@@ -83,7 +104,10 @@ const vipData = [
     color: '#0F52BA',
     benefits: ['شارة VIP 8', 'إطار VIP 8', 'تأثير دخول ياقوت أزرق', 'سحب أرباح أسبوعي', 'إدارة وكالة'],
     requirements: { minChargeLevel: 50000, minActivityLevel: 100, minDaysActive: 60 },
-    priceCoins: 50000
+    priceCoins: 50000,
+    priceCoins3Months: 45000,
+    priceCoins12Months: 35000,
+    durationDays: 30,
   },
   {
     level: 9,
@@ -93,7 +117,10 @@ const vipData = [
     color: '#FF2400',
     benefits: ['شارة VIP 9', 'إطار VIP 9', 'تأثير دخول تاج ملكي', 'هدية أسبوعية فاخرة', 'ظهور في قائمة الشرف'],
     requirements: { minChargeLevel: 100000, minActivityLevel: 150, minDaysActive: 90 },
-    priceCoins: 100000
+    priceCoins: 100000,
+    priceCoins3Months: 90000,
+    priceCoins12Months: 70000,
+    durationDays: 30,
   },
   {
     level: 10,
@@ -104,7 +131,10 @@ const vipData = [
     entryEffect: 'legendary_entry',
     benefits: ['شارة VIP 10 الأسطورية', 'إطار VIP 10 الأسطوري', 'تأثير دخول أسطوري', 'جميع مزايا VIP مجاناً', 'هدية يومية أسطورية', 'مقعد ملكي حصري', 'ظهور خاص للملف الشخصي'],
     requirements: { minChargeLevel: 500000, minActivityLevel: 300, minDaysActive: 180 },
-    priceCoins: 500000
+    priceCoins: 500000,
+    priceCoins3Months: 450000,
+    priceCoins12Months: 350000,
+    durationDays: 30,
   }
 ];
 

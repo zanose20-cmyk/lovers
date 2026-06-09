@@ -1,6 +1,7 @@
 const FriendRequest = require('../models/FriendRequest');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
+const admin = require('firebase-admin');
 const logger = require('../utils/logger');
 
 async function sendRequest(req, res) {
@@ -36,6 +37,25 @@ async function sendRequest(req, res) {
       data: { requestId: request.requestId, fromUserId, fromUserName: sender.displayName }
     });
     await notif.save();
+
+    // Send FCM push notification
+    try {
+      if (admin.apps.length > 0) {
+        const tokens = (receiver.devices || []).map(d => d.pushToken).filter(Boolean);
+        if (tokens.length > 0) {
+          await admin.messaging().sendEachForMulticast({
+            notification: {
+              title: 'طلب صداقة',
+              body: `${sender.displayName} يطلب إضافتك كصديق`,
+            },
+            data: { type: 'friend_request', requestId: request.requestId, fromUserId, click_action: 'FLUTTER_NOTIFICATION_CLICK' },
+            tokens,
+          });
+        }
+      }
+    } catch (fcmErr) {
+      logger.error('FCM friend request error', fcmErr);
+    }
 
     res.json({ ok: true, requestId: request.requestId });
   } catch (err) {

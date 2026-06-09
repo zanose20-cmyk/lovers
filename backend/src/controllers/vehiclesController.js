@@ -6,7 +6,7 @@ const logger = require('../utils/logger');
 async function listVehicles(req, res) {
   try {
     const vehicles = await Vehicle.find({ isActive: true }).sort({ priceCoins: 1 }).lean();
-    res.json(vehicles);
+    res.json({ vehicles });
   } catch (err) {
     logger.error('listVehicles error', err);
     res.status(500).json({ error: 'Failed to list vehicles' });

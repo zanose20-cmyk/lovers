@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../config/app_config.dart';
 import '../services/socket_service.dart';
 
@@ -183,7 +184,20 @@ class _VoiceRoomScreenState extends State<VoiceRoomScreen> {
                       children: [
                         Text(_currentGift!['senderName'] ?? '', style: const TextStyle(color: Colors.white, fontSize: 16)),
                         const SizedBox(height: 8),
-                        Icon(_giftIcon(_currentGift!['gift'] ?? ''), color: Colors.amber, size: 80),
+                        if (_currentGift!['giftImageUrl'] != null)
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: CachedNetworkImage(
+                              imageUrl: _currentGift!['giftImageUrl'],
+                              width: 100,
+                              height: 100,
+                              fit: BoxFit.contain,
+                              placeholder: (_, __) => Icon(_giftIcon(_currentGift!['gift'] ?? ''), color: Colors.amber, size: 80),
+                              errorWidget: (_, __, ___) => Icon(_giftIcon(_currentGift!['gift'] ?? ''), color: Colors.amber, size: 80),
+                            ),
+                          )
+                        else
+                          Icon(_giftIcon(_currentGift!['gift'] ?? ''), color: Colors.amber, size: 80),
                         const SizedBox(height: 8),
                         Text(_currentGift!['gift'] ?? '', style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
                       ],
@@ -198,10 +212,10 @@ class _VoiceRoomScreenState extends State<VoiceRoomScreen> {
   }
 
   void _onGiftReceived(dynamic payload) {
-    if (!mounted) return;
+    if (!mounted || payload is! Map) return;
     try {
       setState(() {
-        _currentGift = Map.from(payload as Map);
+        _currentGift = Map<String, dynamic>.from(payload);
         _showGiftOverlay = true;
       });
       Future.delayed(const Duration(seconds: 4), () {

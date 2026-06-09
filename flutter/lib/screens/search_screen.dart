@@ -39,8 +39,8 @@ class _SearchScreenState extends State<SearchScreen> {
     try {
       final resp = await api.get('/api/users/search', queryParams: {'q': q});
       if (resp.statusCode == 200) {
-        _users = (resp.data['users'] as List?)?.cast<Map<String, dynamic>>() ?? [];
-        _hashtags = (resp.data['hashtags'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+        _users = (resp.data['users'] as List?)?.map((e) => Map<String, dynamic>.from(e as Map)).toList() ?? [];
+        _hashtags = (resp.data['hashtags'] as List?)?.map((e) => Map<String, dynamic>.from(e as Map)).toList() ?? [];
       }
     } catch (_) {}
     if (mounted) setState(() => _loading = false);

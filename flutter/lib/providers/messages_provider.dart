@@ -29,11 +29,12 @@ class MessagesProvider extends ChangeNotifier {
             notifyListeners();
           }
         }
-        final idx = _conversations.indexWhere((c) => c.user?['userId'] == msg.fromUserId || c.user?['userId'] == msg.toUserId);
+        final otherUserId = msg.fromUserId == myUserId ? msg.toUserId : msg.fromUserId;
+        final idx = _conversations.indexWhere((c) => c.user?['userId'] == otherUserId);
         if (idx != -1) {
           _conversations[idx] = ConversationModel(
             user: _conversations[idx].user,
-            lastMessage: data,
+            lastMessage: msg,
             unread: msg.fromUserId == _currentChatUserId ? 0 : (_conversations[idx].unread ?? 0) + 1,
           );
           notifyListeners();
@@ -103,5 +104,11 @@ class MessagesProvider extends ChangeNotifier {
   void clearError() {
     _error = null;
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _socket.dispose();
+    super.dispose();
   }
 }

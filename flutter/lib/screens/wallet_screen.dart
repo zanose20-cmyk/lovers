@@ -115,7 +115,7 @@ class _WalletScreenState extends State<WalletScreen> {
           style: const TextStyle(color: Colors.white),
         ),
         actions: [
-          TextButton(onPressed: () { controller.dispose(); Navigator.pop(ctx); }, child: const Text('إلغاء')),
+          TextButton(onPressed: () { Navigator.pop(ctx); }, child: const Text('إلغاء')),
           TextButton(
             onPressed: () async {
               final amount = int.tryParse(controller.text);
@@ -132,13 +132,12 @@ class _WalletScreenState extends State<WalletScreen> {
                   if (ctx.mounted) Navigator.pop(ctx);
                 }
               }
-              controller.dispose();
             },
             child: const Text('شحن', style: TextStyle(color: AppColors.primary)),
           ),
         ],
       ),
-    );
+    ).then((_) => controller.dispose());
   }
 
   void _showWithdrawDialog(BuildContext context) {
@@ -160,7 +159,7 @@ class _WalletScreenState extends State<WalletScreen> {
           style: const TextStyle(color: Colors.white),
         ),
         actions: [
-          TextButton(onPressed: () { controller.dispose(); Navigator.pop(ctx); }, child: const Text('إلغاء')),
+          TextButton(onPressed: () { Navigator.pop(ctx); }, child: const Text('إلغاء')),
           TextButton(
             onPressed: () async {
               final amount = int.tryParse(controller.text);
@@ -169,7 +168,7 @@ class _WalletScreenState extends State<WalletScreen> {
                   final ok = await context.read<WalletProvider>().withdraw(amount);
                   if (ctx.mounted) {
                     Navigator.pop(ctx);
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text(ok ? 'تم السحب بنجاح' : 'فشل السحب')),
                     );
                   }
@@ -177,13 +176,12 @@ class _WalletScreenState extends State<WalletScreen> {
                   if (ctx.mounted) Navigator.pop(ctx);
                 }
               }
-              controller.dispose();
             },
             child: const Text('سحب', style: TextStyle(color: AppColors.primary)),
           ),
         ],
       ),
-    );
+    ).then((_) => controller.dispose());
   }
 }
 

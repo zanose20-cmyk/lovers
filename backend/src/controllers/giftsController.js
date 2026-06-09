@@ -7,7 +7,7 @@ const logger = require('../utils/logger');
 async function listGifts(req, res) {
   try {
     const gifts = await Gift.find().sort({ createdAt: 1 }).lean();
-    res.json(gifts);
+    res.json({ gifts });
   } catch (err) {
     logger.error('listGifts error', err);
     res.status(500).json({ error: 'Failed to list gifts' });

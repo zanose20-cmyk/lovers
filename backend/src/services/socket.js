@@ -2,6 +2,7 @@ const { Server } = require('socket.io');
 const { createClient } = require('redis');
 const { createAdapter } = require('@socket.io/redis-adapter');
 const jwt = require('jsonwebtoken');
+const admin = require('firebase-admin');
 const config = require('../config');
 const logger = require('../utils/logger');
 const User = require('../models/User');
@@ -121,23 +122,43 @@ function initSocket(server) {
 
     socket.on('privateMessage', async (payload) => {
       try {
+        if (!socket.userId || !payload.toUserId || !payload.content) return;
         const message = {
           messageId: uuidv4(),
           fromUserId: socket.userId,
           toUserId: payload.toUserId,
           type: payload.type || 'text',
-          content: payload.content,
-          attachments: payload.attachments || [],
+          content: String(payload.content).slice(0, 2000),
+          attachments: Array.isArray(payload.attachments) ? payload.attachments.slice(0, 10) : [],
           createdAt: new Date()
         };
-        
+
         const Msg = require('../models/Message');
         await new Msg(message).save();
-        
-        // Send to recipient's personal room
+
         io.to(`user:${payload.toUserId}`).emit('privateMessage', message);
-        // Also send back to sender for confirmation
         socket.emit('privateMessage', message);
+
+        // Send FCM push notification if recipient is offline
+        try {
+          const recipient = await User.findOne({ userId: payload.toUserId }).select('devices displayName').lean();
+          if (recipient && admin.apps.length > 0) {
+            const tokens = (recipient.devices || []).map(d => d.pushToken).filter(Boolean);
+            if (tokens.length > 0) {
+              const sender = await User.findOne({ userId: socket.userId }).select('displayName').lean();
+              await admin.messaging().sendEachForMulticast({
+                notification: {
+                  title: sender?.displayName || 'رسالة جديدة',
+                  body: String(payload.content).slice(0, 100),
+                },
+                data: { type: 'privateMessage', fromUserId: socket.userId, click_action: 'FLUTTER_NOTIFICATION_CLICK' },
+                tokens,
+              });
+            }
+          }
+        } catch (fcmErr) {
+          logger.error('FCM privateMessage error', fcmErr);
+        }
       } catch (err) {
         logger.error('privateMessage socket error', err);
       }
@@ -157,12 +178,32 @@ function initSocket(server) {
     });
 
     // --- Gift Events ---
-    socket.on('gift:send', ({ roomId, toUserId, giftSku, count, giftMeta }) => {
-      const payload = { fromUserId: socket.userId, toUserId, giftSku, count, giftMeta };
+    socket.on('gift:send', async ({ roomId, toUserId, giftSku, count, giftMeta }) => {
+      const giftPayload = { fromUserId: socket.userId, toUserId, giftSku, count, giftMeta };
       if (roomId) {
-        io.to(roomId).emit('gift:sent', payload);
+        io.to(roomId).emit('gift:sent', giftPayload);
       } else {
-        io.to(`user:${toUserId}`).emit('gift:sent', payload);
+        io.to(`user:${toUserId}`).emit('gift:sent', giftPayload);
+      }
+      // Send FCM notification for gift
+      try {
+        if (toUserId && admin.apps.length > 0) {
+          const recipient = await User.findOne({ userId: toUserId }).select('devices').lean();
+          const sender = await User.findOne({ userId: socket.userId }).select('displayName').lean();
+          const tokens = (recipient?.devices || []).map(d => d.pushToken).filter(Boolean);
+          if (tokens.length > 0) {
+            await admin.messaging().sendEachForMulticast({
+              notification: {
+                title: 'هدايا لك!',
+                body: '${sender?.displayName || "مستخدم"} أرسل لك هدية',
+              },
+              data: { type: 'gift', fromUserId: socket.userId, click_action: 'FLUTTER_NOTIFICATION_CLICK' },
+              tokens,
+            });
+          }
+        }
+      } catch (fcmErr) {
+        logger.error('FCM gift error', fcmErr);
       }
     });
 

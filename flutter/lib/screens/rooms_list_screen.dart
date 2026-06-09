@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../providers/rooms_provider.dart';
 import '../models/room_model.dart';
+import '../widgets/common_widgets.dart';
 
 class RoomsListScreen extends StatefulWidget {
   const RoomsListScreen({super.key});
@@ -55,17 +56,23 @@ class _RoomsListScreenState extends State<RoomsListScreen> with SingleTickerProv
       body: Consumer<RoomsProvider>(
         builder: (ctx, rp, _) {
           if (rp.isLoading && rp.rooms.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
+            return ShimmerList(itemCount: 6, itemHeight: 100);
           }
           if (rp.error != null && rp.rooms.isEmpty) {
-            return Center(
-              child: Column(mainAxisSize: MainAxisSize.min, children: [
-                const Icon(Icons.error_outline, color: AppColors.error, size: 48),
-                const SizedBox(height: 12),
-                Text('حدث خطأ: ${rp.error}', style: const TextStyle(color: AppColors.textHint)),
-                const SizedBox(height: 12),
-                ElevatedButton(onPressed: () => rp.loadRooms(type: 'public'), child: const Text('إعادة المحاولة')),
-              ]),
+            return ProfessionalEmptyState(
+              icon: Icons.error_outline,
+              title: 'حدث خطأ',
+              subtitle: rp.error ?? 'حدث خطأ غير متوقع',
+              actionLabel: 'إعادة المحاولة',
+              onAction: () => rp.loadRooms(type: 'public'),
+            );
+          }
+          if (rp.rooms.isEmpty) {
+            return const ProfessionalEmptyState(
+              icon: Icons.meeting_room_outlined,
+              title: 'لا توجد غرف',
+              subtitle: 'لم يتم إنشاء أي غرف بعد. كن أول من ينشئ غرفة!',
+              actionLabel: 'إنشاء غرفة',
             );
           }
           return RefreshIndicator(

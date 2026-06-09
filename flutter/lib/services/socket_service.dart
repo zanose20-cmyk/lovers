@@ -4,17 +4,27 @@ import 'package:socket_io_client/socket_io_client.dart' as IO;
 class SocketService {
   IO.Socket? socket;
   final Map<String, List<Function(dynamic)>> _handlers = {};
+  bool _connected = false;
 
   void connect(String url, String token) {
+    if (_connected) return;
     socket = IO.io(url, {
       'transports': ['websocket'],
       'extraHeaders': {'Authorization': 'Bearer $token'}
     });
 
     socket?.on('connect', (_) => debugPrint('socket connected'));
-    socket?.on('disconnect', (_) => debugPrint('socket disconnected'));
+    socket?.on('disconnect', (_) {
+      _connected = false;
+      debugPrint('socket disconnected');
+    });
+    socket?.on('connect_error', (err) {
+      _connected = false;
+      debugPrint('socket connect_error: $err');
+    });
 
-    // re-register handlers if any
+    _connected = true;
+
     _handlers.forEach((event, list) {
       socket?.on(event, (data) {
         for (final h in list) {
@@ -36,7 +46,7 @@ class SocketService {
     } else {
       final list = _handlers[event];
       list?.remove(handler);
-      socket?.off(event, handler as dynamic);
+      socket?.off(event);
     }
   }
 
@@ -49,8 +59,10 @@ class SocketService {
   }
 
   void dispose() {
+    _connected = false;
     try { socket?.disconnect(); } catch (e) {}
     try { socket?.dispose(); } catch (e) {}
     _handlers.clear();
+    socket = null;
   }
 }

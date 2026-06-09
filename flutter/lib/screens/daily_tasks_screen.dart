@@ -111,6 +111,7 @@ class _TaskCard extends StatelessWidget {
       case 'send_gifts': return Icons.card_giftcard_rounded;
       case 'join_rooms': return Icons.mic_rounded;
       case 'invite_friends': return Icons.people_rounded;
+      case 'watch_ads': return Icons.play_circle_outline_rounded;
       case 'share_content': return Icons.share_rounded;
       default: return Icons.task_alt;
     }
@@ -123,6 +124,7 @@ class _TaskCard extends StatelessWidget {
       case 'send_gifts': return AppColors.neonPink;
       case 'join_rooms': return AppColors.neonBlue;
       case 'invite_friends': return AppColors.success;
+      case 'watch_ads': return AppColors.gold;
       case 'share_content': return AppColors.warning;
       default: return AppColors.primary;
     }

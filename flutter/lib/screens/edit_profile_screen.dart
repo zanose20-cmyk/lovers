@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import '../services/auth_provider.dart';
+import '../services/firebase_service.dart';
 import '../providers/api_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common_widgets.dart';
@@ -49,7 +50,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.gallery, maxWidth: 512, maxHeight: 512);
     if (image != null) {
-      setState(() => _avatarUrl = image.path);
+      try {
+        final bytes = await image.readAsBytes();
+        final fileName = 'avatar_${DateTime.now().millisecondsSinceEpoch}.jpg';
+        final url = await FirebaseService().uploadFile('avatars', fileName, bytes);
+        if (mounted) setState(() => _avatarUrl = url);
+      } catch (_) {
+        if (mounted) setState(() => _avatarUrl = image.path);
+      }
     }
   }
 
@@ -58,13 +66,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     setState(() => _saving = true);
     try {
       final api = context.read<ApiProvider>().api;
-      final resp = await api.put('/api/users/me', body: {
+      final body = <String, dynamic>{
         'displayName': _nameController.text.trim(),
         'bio': _bioController.text.trim(),
         'gender': _gender,
         'age': _age,
         'country': _country,
-      });
+      };
+      if (_avatarUrl != null && _avatarUrl!.startsWith('http')) {
+        body['avatarUrl'] = _avatarUrl;
+      }
+      final resp = await api.put('/api/users/me', body: body);
       if (resp.statusCode == 200 && resp.data['ok'] == true && mounted) {
         final updated = resp.data['user'] as Map<String, dynamic>?;
         if (updated != null) {
@@ -149,9 +161,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.primary)),
               ),
               style: const TextStyle(color: AppColors.textPrimary),
-              items: ['السعودية', 'الإمارات', 'الكويت', 'قطر', 'عمان', 'البحرين', 'مصر', 'الأردن', 'العراق', 'فلسطين', 'لبنان', 'سوريا', 'اليمن', 'ليبيا', 'تونس', 'الجزائر', 'المغرب', 'السودان']
-                  .map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
-              onChanged: (v) => setState(() => _country = v!),
+              items: [
+                'السعودية', 'الإمارات', 'الكويت', 'قطر', 'عمان', 'البحرين',
+                'مصر', 'الأردن', 'العراق', 'فلسطين', 'لبنان', 'سوريا',
+                'اليمن', 'ليبيا', 'تونس', 'الجزائر', 'المغرب', 'السودان',
+                'موريتانيا', 'الصومال', 'جيبوتي', 'جزر القمر',
+                'تركيا', 'إيران', 'أفغانستان', 'باكستان',
+                'مالزيا', 'إندونيسيا', 'بروناي', 'تركمنستان',
+                'فرنسا', 'ألمانيا', 'إسبانيا', 'إيطاليا', 'بريطانيا', 'هولندا', 'بلجيكا', 'سويسرا', 'السويد', 'النرويج', 'دنمارك', 'فنلندا', 'بولندا', 'البرتغال', 'اليونان', 'رومانيا', 'أوكرانيا', 'روسيا',
+                'أمريكا', 'كندا', 'المكسيك', 'البرازيل', 'الأرجنتين', 'كولومبيا', 'تشيلي', 'بيرو', 'فنزويلا',
+                'اليابان', 'كوريا الجنوبية', 'الصين', 'الهند', 'تايلاند', 'فيتنام', 'الفلبين', 'سنغافورة',
+                'نيجيريا', 'كينيا', 'جنوب أفريقيا', 'غانا', 'إثيوبيا',
+                'أستراليا', 'نيوزيلندا',
+              ].map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+              onChanged: (v) { if (v != null) setState(() => _country = v); },
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
@@ -170,7 +193,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 DropdownMenuItem(value: 'female', child: Text('أنثى')),
                 DropdownMenuItem(value: 'other', child: Text('أخرى')),
               ],
-              onChanged: (v) => setState(() => _gender = v!),
+              onChanged: (v) { if (v != null) setState(() => _gender = v); },
             ),
             const SizedBox(height: 16),
             TextField(

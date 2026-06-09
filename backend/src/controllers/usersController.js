@@ -3,6 +3,8 @@ const Agency = require('../models/Agency');
 const Post = require('../models/Post');
 const Notification = require('../models/Notification');
 const logger = require('../utils/logger');
+const { uploadFile } = require('../services/storage');
+const admin = require('firebase-admin');
 
 async function getProfile(req, res) {
   try {
@@ -347,6 +349,84 @@ async function getUserVIPStatus(req, res) {
   }
 }
 
+// ==================== BLOCK / UNBLOCK ====================
+async function blockUser(req, res) {
+  try {
+    const { userId } = req.params;
+    const currentUserId = req.user.userId;
+    if (userId === currentUserId) return res.status(400).json({ error: 'Cannot block yourself' });
+
+    const user = await User.findOne({ userId: currentUserId });
+    user.blockedUsers = user.blockedUsers || [];
+    if (!user.blockedUsers.includes(userId)) {
+      user.blockedUsers.push(userId);
+      await user.save();
+    }
+    res.json({ ok: true });
+  } catch (err) {
+    logger.error('blockUser error', err);
+    res.status(500).json({ error: 'Failed to block user' });
+  }
+}
+
+async function unblockUser(req, res) {
+  try {
+    const { userId } = req.params;
+    const currentUserId = req.user.userId;
+    await User.updateOne({ userId: currentUserId }, { $pull: { blockedUsers: userId } });
+    res.json({ ok: true });
+  } catch (err) {
+    logger.error('unblockUser error', err);
+    res.status(500).json({ error: 'Failed to unblock user' });
+  }
+}
+
+async function isBlocked(req, res) {
+  try {
+    const { userId } = req.params;
+    const currentUserId = req.user.userId;
+    const user = await User.findOne({ userId: currentUserId }).select('blockedUsers').lean();
+    res.json({ blocked: (user?.blockedUsers || []).includes(userId) });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to check block status' });
+  }
+}
+
+// ==================== FILE UPLOAD ====================
+async function uploadFileHandler(req, res) {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No file provided' });
+    const folder = req.body.folder || 'uploads';
+    const url = await uploadFile(req.file.buffer, req.file.mimetype, folder);
+    res.json({ ok: true, url });
+  } catch (err) {
+    logger.error('uploadFileHandler error', err);
+    res.status(500).json({ error: 'Failed to upload file' });
+  }
+}
+
+// ==================== PUSH NOTIFICATIONS ====================
+async function sendPushNotification(userId, title, body, data = {}) {
+  try {
+    const user = await User.findOne({ userId }).select('devices').lean();
+    if (!user) return;
+    const tokens = (user.devices || []).map(d => d.pushToken).filter(Boolean);
+    if (tokens.length === 0) return;
+
+    if (admin.apps.length > 0) {
+      const message = {
+        notification: { title, body },
+        data: { ...data, click_action: 'FLUTTER_NOTIFICATION_CLICK' },
+        tokens,
+      };
+      const response = await admin.messaging().sendEachForMulticast(message);
+      logger.info(`FCM sent to ${response.successCount}/${tokens.length} devices`);
+    }
+  } catch (err) {
+    logger.error('sendPushNotification error', err);
+  }
+}
+
 module.exports = {
   getProfile,
   updateProfile,
@@ -359,5 +439,10 @@ module.exports = {
   getNotifications,
   markNotificationRead,
   markAllNotificationsRead,
-  getUserVIPStatus
+  getUserVIPStatus,
+  blockUser,
+  unblockUser,
+  isBlocked,
+  uploadFileHandler,
+  sendPushNotification,
 };

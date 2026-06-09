@@ -26,7 +26,7 @@ class _RoomScreenState extends State<RoomScreen> {
   @override
   void initState() {
     super.initState();
-    _loadRoom();
+    _loadRoom().then((_) => _joinRoom());
     _connectSocket();
   }
 
@@ -54,6 +54,14 @@ class _RoomScreenState extends State<RoomScreen> {
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  Future<void> _joinRoom() async {
+    try {
+      final rp = context.read<RoomsProvider>();
+      await rp.joinRoom(widget.roomId);
+      await _loadRoom();
+    } catch (_) {}
   }
 
   Future<void> _joinVoice() async {
@@ -89,6 +97,12 @@ class _RoomScreenState extends State<RoomScreen> {
     } catch (e) {
       if (mounted) Navigator.pop(context);
     }
+  }
+
+  @override
+  void dispose() {
+    _socketService.dispose();
+    super.dispose();
   }
 
   @override

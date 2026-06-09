@@ -45,17 +45,23 @@ class PostsProvider extends ChangeNotifier {
     return null;
   }
 
-  Future<bool> likePost(String postId) async {
+  Future<bool> likePost(String postId, {String? userId}) async {
     try {
-      final ok = await _service.likePost(postId);
-      if (ok) {
+      final result = await _service.likePost(postId);
+      if (result != null) {
         final idx = _posts.indexWhere((p) => p.postId == postId);
         if (idx != -1) {
-          _posts[idx].likesCount = (_posts[idx].likesCount ?? 0) + 1;
+          _posts[idx].likesCount = result['likesCount'];
+          final uid = userId ?? 'me';
+          if (result['liked'] == true) {
+            _posts[idx].likes = [...(_posts[idx].likes ?? []), uid];
+          } else {
+            _posts[idx].likes = (_posts[idx].likes ?? []).where((id) => id != uid).toList();
+          }
           notifyListeners();
         }
       }
-      return ok;
+      return true;
     } catch (e) {
       _error = e.toString();
       notifyListeners();

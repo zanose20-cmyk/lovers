@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../theme/app_theme.dart';
 import '../providers/gifts_provider.dart';
 import '../models/gift_model.dart';
@@ -79,7 +80,24 @@ void _sendGiftDialog(BuildContext context, GiftModel gift) {
     context: context,
     builder: (ctx) => AlertDialog(
       backgroundColor: AppColors.backgroundCard,
-      title: Text('إرسال ${gift.name ?? 'هدية'}', style: const TextStyle(color: AppColors.textPrimary)),
+      title: Row(
+        children: [
+          if (gift.imageUrl != null)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: CachedNetworkImage(
+                imageUrl: gift.imageUrl!,
+                width: 32,
+                height: 32,
+                fit: BoxFit.cover,
+                placeholder: (_, __) => const Icon(Icons.card_giftcard, size: 24, color: AppColors.primary),
+                errorWidget: (_, __, ___) => const Icon(Icons.card_giftcard, size: 24, color: AppColors.primary),
+              ),
+            ),
+          const SizedBox(width: 8),
+          Expanded(child: Text('إرسال ${gift.name ?? 'هدية'}', style: const TextStyle(color: AppColors.textPrimary, fontSize: 16))),
+        ],
+      ),
       content: TextField(
         controller: controller,
         decoration: const InputDecoration(
@@ -89,7 +107,7 @@ void _sendGiftDialog(BuildContext context, GiftModel gift) {
       ),
       actions: [
         TextButton(
-          onPressed: () { controller.dispose(); Navigator.pop(ctx); },
+          onPressed: () { Navigator.pop(ctx); },
           child: const Text('إلغاء', style: TextStyle(color: AppColors.textHint)),
         ),
         TextButton(
@@ -100,25 +118,24 @@ void _sendGiftDialog(BuildContext context, GiftModel gift) {
               await context.read<GiftsProvider>().sendGift(userId, gift.sku ?? '', 1);
               if (ctx.mounted) {
                 Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(
+                if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('تم إرسال الهدية')),
                 );
               }
             } catch (_) {
               if (ctx.mounted) {
                 Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(
+                if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('فشل إرسال الهدية')),
                 );
               }
             }
-            controller.dispose();
           },
           child: const Text('إرسال', style: TextStyle(color: AppColors.primary)),
         ),
       ],
     ),
-  );
+  ).then((_) => controller.dispose());
 }
 
 class _GiftGrid extends StatelessWidget {
@@ -162,8 +179,13 @@ class _GiftGrid extends StatelessWidget {
                           child: gift.imageUrl != null
                               ? ClipRRect(
                                   borderRadius: BorderRadius.circular(12),
-                                  child: Image.network(gift.imageUrl!, width: 60, height: 60, fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => const Icon(Icons.card_giftcard, size: 50, color: AppColors.primary),
+                                  child: CachedNetworkImage(
+                                    imageUrl: gift.imageUrl!,
+                                    width: 60,
+                                    height: 60,
+                                    fit: BoxFit.cover,
+                                    placeholder: (_, __) => const Icon(Icons.card_giftcard, size: 50, color: AppColors.primary),
+                                    errorWidget: (_, __, ___) => const Icon(Icons.card_giftcard, size: 50, color: AppColors.primary),
                                   ),
                                 )
                               : const Icon(Icons.card_giftcard, size: 50, color: AppColors.primary),

@@ -1,13 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const {
-  getVIPLevels, getUserVIP, purchaseVIP,
+  getVIPLevels, getVIPStatus, getUserVIP, purchaseVIP,
   createVIPLevel, updateVIPLevel
 } = require('../controllers/vipController');
 const { requireAuth } = require('../middleware/authMiddleware');
 const { requireRole } = require('../middleware/roleMiddleware');
 
 router.get('/levels', getVIPLevels);
+router.get('/status', requireAuth, getVIPStatus);
 router.get('/user', requireAuth, getUserVIP);
 router.get('/user/:userId', getUserVIP);
 router.post('/purchase', requireAuth, purchaseVIP);

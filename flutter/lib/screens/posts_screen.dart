@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../providers/posts_provider.dart';
+import '../services/auth_provider.dart';
 
 class PostsScreen extends StatefulWidget {
   const PostsScreen({super.key});
@@ -89,7 +90,11 @@ class _PostsScreenState extends State<PostsScreen> {
                               ],
                             ),
                           ),
-                          PopupMenuButton<String>(
+                          Consumer<AuthProvider>(
+                            builder: (_, auth, __) {
+                              final isAuthor = post.authorId == auth.user?['userId'] || (auth.user?['roles'] as List?)?.contains('admin') == true;
+                              if (!isAuthor) return const SizedBox.shrink();
+                              return PopupMenuButton<String>(
                             icon: const Icon(Icons.more_horiz, color: AppColors.textHint, size: 20),
                             onSelected: (v) async {
                               if (v == 'delete' && post.postId != null) {
@@ -104,6 +109,8 @@ class _PostsScreenState extends State<PostsScreen> {
                             itemBuilder: (_) => [
                               const PopupMenuItem(value: 'delete', child: Text('حذف المنشور', style: TextStyle(color: AppColors.error))),
                             ],
+                          );
+                            },
                           ),
                         ],
                       ),
@@ -124,10 +131,17 @@ class _PostsScreenState extends State<PostsScreen> {
                     const Divider(color: AppColors.backgroundCardLight, height: 1),
                     Row(
                       children: [
-                        _PostAction(
-                          icon: Icons.favorite_border,
-                          label: '${post.likesCount ?? 0}',
-                          onTap: () { if (post.postId != null) pp.likePost(post.postId!); },
+                        Consumer<AuthProvider>(
+                          builder: (_, auth, __) {
+                            final userId = auth.user?['userId'] as String?;
+                            final isLiked = userId != null && (post.likes ?? []).contains(userId);
+                            return _PostAction(
+                              icon: isLiked ? Icons.favorite : Icons.favorite_border,
+                              iconColor: isLiked ? AppColors.error : null,
+                              label: '${post.likesCount ?? 0}',
+                              onTap: () { if (post.postId != null) pp.likePost(post.postId!, userId: userId); },
+                            );
+                          },
                         ),
                         _PostAction(
                           icon: Icons.chat_bubble_outline,
@@ -196,8 +210,8 @@ class _PostsScreenState extends State<PostsScreen> {
 }
 
 class _PostAction extends StatelessWidget {
-  final IconData icon; final String label; final VoidCallback onTap;
-  const _PostAction({required this.icon, required this.label, required this.onTap});
+  final IconData icon; final String label; final VoidCallback onTap; final Color? iconColor;
+  const _PostAction({required this.icon, required this.label, required this.onTap, this.iconColor});
 
   @override
   Widget build(BuildContext context) {
@@ -209,7 +223,7 @@ class _PostAction extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: AppColors.textHint, size: 18),
+              Icon(icon, color: iconColor ?? AppColors.textHint, size: 18),
               const SizedBox(width: 4),
               Text(label, style: const TextStyle(color: AppColors.textHint, fontSize: 12)),
             ],

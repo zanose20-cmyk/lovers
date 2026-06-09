@@ -209,7 +209,7 @@ async function getTrendingHashtags(req, res) {
       .slice(0, 20)
       .map(([tag, count]) => ({ tag, count }));
     
-    res.json(trending);
+    res.json({ trending });
   } catch (err) {
     logger.error('getTrendingHashtags error', err);
     res.status(500).json({ error: 'Failed to get trending hashtags' });

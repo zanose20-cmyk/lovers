@@ -20,9 +20,12 @@ class PostsService {
     return null;
   }
 
-  Future<bool> likePost(String postId) async {
+  Future<Map<String, dynamic>?> likePost(String postId) async {
     final resp = await api.post('/api/posts/$postId/like');
-    return resp.statusCode == 200;
+    if (resp.statusCode == 200) {
+      return {'liked': resp.data['liked'], 'likesCount': resp.data['likesCount']};
+    }
+    return null;
   }
 
   Future<bool> commentPost(String postId, String content) async {

@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../services/auth_provider.dart';
 import '../theme/app_theme.dart';
 import '../providers/api_provider.dart';
+import '../services/api_service.dart';
+import '../config/app_config.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String? userId;
@@ -68,6 +70,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
     Navigator.pushNamed(context, '/conversation', arguments: widget.userId);
   }
 
+  Future<void> _blockUser() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.backgroundCard,
+        title: const Text('حظر المستخدم', style: TextStyle(color: AppColors.textPrimary)),
+        content: const Text('هل تريد حظر هذا المستخدم؟ لن تتمكن من رؤية محتوى بعضكما.', style: TextStyle(color: AppColors.textHint)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('إلغاء')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('حظر', style: TextStyle(color: AppColors.error)),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !mounted) return;
+
+    try {
+      final api = context.read<ApiProvider>().api;
+      final resp = await api.post('/api/users/${widget.userId}/block');
+      if (resp.statusCode == 200 && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم الحظر بنجاح')));
+        Navigator.pop(context);
+      }
+    } catch (_) {}
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
@@ -81,7 +111,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.backgroundDark,
-      appBar: AppBar(title: Text(_isOwner ? 'الملف الشخصي' : name)),
+      appBar: AppBar(
+        title: Text(_isOwner ? 'الملف الشخصي' : name),
+        actions: [
+          if (!_isOwner)
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert, color: AppColors.textPrimary),
+              onSelected: (v) {
+                if (v == 'block') _blockUser();
+              },
+              itemBuilder: (_) => [
+                const PopupMenuItem(
+                  value: 'block',
+                  child: Text('حظر المستخدم', style: TextStyle(color: AppColors.error)),
+                ),
+              ],
+            ),
+        ],
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(

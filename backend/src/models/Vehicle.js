@@ -4,7 +4,7 @@ const VehicleSchema = new mongoose.Schema({
   sku: { type: String, unique: true },
   name: String,
   description: String,
-  type: { type: String, enum: ['car', 'plane', 'yacht', 'legendary'], required: true },
+  type: { type: String, enum: ['car', 'plane', 'yacht', 'helicopter', 'horse', 'throne', 'legendary'], required: true },
   rarity: { type: String, enum: ['common', 'rare', 'epic', 'legendary'], default: 'common' },
   priceCoins: { type: Number, default: 0 },
   priceDiamonds: { type: Number, default: 0 },

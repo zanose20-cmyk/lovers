@@ -9,7 +9,10 @@ class VIPLevelModel {
   List<String>? benefits;
   Map<String, dynamic>? requirements;
   int? priceCoins;
+  int? priceCoins3Months;
+  int? priceCoins12Months;
   int? priceDiamonds;
+  int? durationDays;
   bool? isActive;
   DateTime? createdAt;
 
@@ -24,7 +27,10 @@ class VIPLevelModel {
     this.benefits,
     this.requirements,
     this.priceCoins,
+    this.priceCoins3Months,
+    this.priceCoins12Months,
     this.priceDiamonds,
+    this.durationDays,
     this.isActive,
     this.createdAt,
   });
@@ -40,7 +46,10 @@ class VIPLevelModel {
         benefits: json['benefits'] != null ? List<String>.from(json['benefits']) : null,
         requirements: json['requirements'],
         priceCoins: json['priceCoins'],
+        priceCoins3Months: json['priceCoins3Months'],
+        priceCoins12Months: json['priceCoins12Months'],
         priceDiamonds: json['priceDiamonds'],
+        durationDays: json['durationDays'],
         isActive: json['isActive'],
         createdAt: json['createdAt'] != null ? DateTime.tryParse(json['createdAt']) : null,
       );
@@ -56,7 +65,10 @@ class VIPLevelModel {
         'benefits': benefits,
         'requirements': requirements,
         'priceCoins': priceCoins,
+        'priceCoins3Months': priceCoins3Months,
+        'priceCoins12Months': priceCoins12Months,
         'priceDiamonds': priceDiamonds,
+        'durationDays': durationDays,
         'isActive': isActive,
         'createdAt': createdAt?.toIso8601String(),
       };

@@ -28,8 +28,8 @@ class _FriendRequestsScreenState extends State<FriendRequestsScreen> with Single
     try {
       final resp = await api.get('/api/friends/requests');
       if (resp.statusCode == 200) {
-        _received = (resp.data['received'] as List?)?.cast<Map<String, dynamic>>() ?? [];
-        _sent = (resp.data['sent'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+        _received = (resp.data['received'] as List?)?.map((e) => Map<String, dynamic>.from(e as Map)).toList() ?? [];
+        _sent = (resp.data['sent'] as List?)?.map((e) => Map<String, dynamic>.from(e as Map)).toList() ?? [];
       }
     } catch (_) {}
     if (mounted) setState(() => _loading = false);
@@ -39,7 +39,7 @@ class _FriendRequestsScreenState extends State<FriendRequestsScreen> with Single
     final api = context.read<ApiProvider>().api;
     try {
       await api.post('/api/friends/accept', body: {'requestId': requestId});
-      _received.removeWhere((r) => r['id'] == requestId);
+      _received.removeWhere((r) => r['requestId'] == requestId);
       if (mounted) setState(() {});
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم قبول الطلب')));
     } catch (_) {
@@ -51,7 +51,7 @@ class _FriendRequestsScreenState extends State<FriendRequestsScreen> with Single
     final api = context.read<ApiProvider>().api;
     try {
       await api.post('/api/friends/reject', body: {'requestId': requestId});
-      _received.removeWhere((r) => r['id'] == requestId);
+      _received.removeWhere((r) => r['requestId'] == requestId);
       if (mounted) setState(() {});
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم رفض الطلب')));
     } catch (_) {
@@ -63,7 +63,7 @@ class _FriendRequestsScreenState extends State<FriendRequestsScreen> with Single
     final api = context.read<ApiProvider>().api;
     try {
       await api.post('/api/friends/cancel', body: {'requestId': requestId});
-      _sent.removeWhere((r) => r['id'] == requestId);
+      _sent.removeWhere((r) => r['requestId'] == requestId);
       if (mounted) setState(() {});
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم إلغاء الطلب')));
     } catch (_) {
@@ -126,9 +126,11 @@ class _RequestsList extends StatelessWidget {
       itemCount: items.length,
       itemBuilder: (context, index) {
         final item = items[index];
-        final name = item['senderName'] ?? item['receiverName'] ?? 'مستخدم';
+        final user = item['user'] as Map<String, dynamic>?;
+        final name = user?['displayName'] ?? 'مستخدم';
+        final avatarUrl = user?['avatarUrl'] as String?;
         final time = item['createdAt']?.toString() ?? '';
-        final id = item['id'] as String? ?? '';
+        final id = item['requestId'] as String? ?? '';
         return Container(
           margin: const EdgeInsets.only(bottom: 10),
           padding: const EdgeInsets.all(12),
@@ -141,8 +143,8 @@ class _RequestsList extends StatelessWidget {
               CircleAvatar(
                 radius: 24,
                 backgroundColor: AppColors.backgroundCardLight,
-                backgroundImage: item['avatarUrl'] != null ? NetworkImage(item['avatarUrl']) : null,
-                child: item['avatarUrl'] == null
+                backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
+                child: avatarUrl == null
                     ? Icon(Icons.person, color: AppColors.textHint, size: 24)
                     : null,
               ),

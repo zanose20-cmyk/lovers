@@ -6,7 +6,7 @@ async function getTransactions(req, res) {
   try {
     const userId = req.user.userId;
     const txs = await WalletTransaction.find({ userId }).sort({ createdAt: -1 }).limit(200).lean();
-    res.json(txs);
+    res.json({ transactions: txs });
   } catch (err) {
     logger.error('getTransactions error', err);
     res.status(500).json({ error: 'Failed to fetch transactions' });
