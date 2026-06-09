@@ -182,7 +182,22 @@ class _TaskCard extends StatelessWidget {
           const SizedBox(width: 12),
           GestureDetector(
             onTap: completed && !(task.claimed ?? false)
-                ? () => context.read<TasksProvider>().claimReward(task.taskId!)
+                ? () async {
+                    try {
+                      final ok = await context.read<TasksProvider>().claimReward(task.taskId!);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(ok ? 'تم استلام المكافأة' : 'فشل استلام المكافأة')),
+                        );
+                      }
+                    } catch (_) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('خطأ في الاتصال')),
+                        );
+                      }
+                    }
+                  }
                 : null,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),

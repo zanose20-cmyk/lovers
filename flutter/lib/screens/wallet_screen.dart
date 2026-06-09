@@ -115,14 +115,24 @@ class _WalletScreenState extends State<WalletScreen> {
           style: const TextStyle(color: Colors.white),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('إلغاء')),
+          TextButton(onPressed: () { controller.dispose(); Navigator.pop(ctx); }, child: const Text('إلغاء')),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               final amount = int.tryParse(controller.text);
               if (amount != null && amount > 0) {
-                context.read<WalletProvider>().recharge(amount);
-                Navigator.pop(ctx);
+                try {
+                  final ok = await context.read<WalletProvider>().recharge(amount);
+                  if (ctx.mounted) {
+                    Navigator.pop(ctx);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(ok ? 'تم الشحن بنجاح' : 'فشل الشحن')),
+                    );
+                  }
+                } catch (_) {
+                  if (ctx.mounted) Navigator.pop(ctx);
+                }
               }
+              controller.dispose();
             },
             child: const Text('شحن', style: TextStyle(color: AppColors.primary)),
           ),
@@ -150,14 +160,24 @@ class _WalletScreenState extends State<WalletScreen> {
           style: const TextStyle(color: Colors.white),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('إلغاء')),
+          TextButton(onPressed: () { controller.dispose(); Navigator.pop(ctx); }, child: const Text('إلغاء')),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               final amount = int.tryParse(controller.text);
               if (amount != null && amount > 0) {
-                context.read<WalletProvider>().withdraw(amount);
-                Navigator.pop(ctx);
+                try {
+                  final ok = await context.read<WalletProvider>().withdraw(amount);
+                  if (ctx.mounted) {
+                    Navigator.pop(ctx);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(ok ? 'تم السحب بنجاح' : 'فشل السحب')),
+                    );
+                  }
+                } catch (_) {
+                  if (ctx.mounted) Navigator.pop(ctx);
+                }
               }
+              controller.dispose();
             },
             child: const Text('سحب', style: TextStyle(color: AppColors.primary)),
           ),

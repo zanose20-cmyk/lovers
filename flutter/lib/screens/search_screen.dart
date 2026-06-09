@@ -72,7 +72,10 @@ class _SearchScreenState extends State<SearchScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _users.isEmpty && _hashtags.isEmpty
-              ? const Center(child: Text('لا توجد نتائج', style: TextStyle(color: AppColors.textHint)))
+              ? Center(child: Text(
+                  widget.initialQuery.isEmpty ? 'ابحث عن مستخدمين أو هاشتاغات' : 'لا توجد نتائج',
+                  style: const TextStyle(color: AppColors.textHint),
+                ))
               : ListView(
                   padding: const EdgeInsets.all(16),
                   children: [

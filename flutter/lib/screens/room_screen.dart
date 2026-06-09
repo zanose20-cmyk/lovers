@@ -26,32 +26,48 @@ class _RoomScreenState extends State<RoomScreen> {
   }
 
   Future<void> _loadRoom() async {
-    final rp = context.read<RoomsProvider>();
-    await rp.loadRoom(widget.roomId);
-    if (mounted) setState(() { _room = rp.currentRoom; _isLoading = false; });
+    try {
+      final rp = context.read<RoomsProvider>();
+      await rp.loadRoom(widget.roomId);
+      if (mounted) setState(() { _room = rp.currentRoom; _isLoading = false; });
+    } catch (e) {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   Future<void> _joinVoice() async {
-    final rp = context.read<RoomsProvider>();
-    final auth = context.read<AuthProvider>();
-    final voiceAccess = await rp.getVoiceAccess(widget.roomId);
-    if (voiceAccess != null && mounted) {
-      final engine = voiceAccess['engine'] as String?;
-      if (engine == 'jitsi') {
-        Navigator.pushNamed(context, '/jitsi-room', arguments: {
-          'server': voiceAccess['server'],
-          'roomName': voiceAccess['roomName'],
-          'displayName': auth.user?['displayName'] ?? 'مستخدم',
-          'token': auth.token,
-        });
+    try {
+      final rp = context.read<RoomsProvider>();
+      final auth = context.read<AuthProvider>();
+      final voiceAccess = await rp.getVoiceAccess(widget.roomId);
+      if (voiceAccess != null && mounted) {
+        final engine = voiceAccess['engine'] as String?;
+        if (engine == 'jitsi') {
+          Navigator.pushNamed(context, '/jitsi-room', arguments: {
+            'server': voiceAccess['server'],
+            'roomName': voiceAccess['roomName'],
+            'displayName': auth.user?['displayName'] ?? 'مستخدم',
+            'token': auth.token,
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('خطأ في الاتصال بالغرفة')),
+        );
       }
     }
   }
 
   Future<void> _leaveRoom() async {
-    final rp = context.read<RoomsProvider>();
-    final ok = await rp.leaveRoom(widget.roomId);
-    if (ok && mounted) Navigator.pop(context);
+    try {
+      final rp = context.read<RoomsProvider>();
+      final ok = await rp.leaveRoom(widget.roomId);
+      if (ok && mounted) Navigator.pop(context);
+    } catch (e) {
+      if (mounted) Navigator.pop(context);
+    }
   }
 
   @override

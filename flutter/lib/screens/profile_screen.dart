@@ -39,7 +39,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         if (resp.statusCode == 200) {
           _profile = resp.data['user'] as Map<String, dynamic>?;
         }
-      } catch (_) {}
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('فشل تحميل الملف الشخصي')),
+          );
+        }
+      }
       _loading = false;
     }
     setState(() {});
@@ -73,7 +79,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       backgroundColor: AppColors.backgroundDark,
       appBar: AppBar(title: Text(_isOwner ? 'الملف الشخصي' : name)),
-      body: SingleChildScrollView(
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
@@ -86,17 +94,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   backgroundImage: avatar != null ? NetworkImage(avatar) as ImageProvider : null,
                   child: avatar == null ? const Icon(Icons.person, size: 60, color: AppColors.textHint) : null,
                 ),
-                Positioned(
-                  bottom: 0, right: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: AppColors.primary,
-                      shape: BoxShape.circle,
+                if (_isOwner)
+                  Positioned(
+                    bottom: 0, right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: AppColors.primary,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
                     ),
-                    child: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
                   ),
-                ),
               ],
             ),
             const SizedBox(height: 16),

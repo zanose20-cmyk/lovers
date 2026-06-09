@@ -34,8 +34,8 @@ class _HomeScreenState extends State<HomeScreen> {
       context.read<TasksProvider>().loadDailyTasks();
       context.read<MessagesProvider>().loadConversations();
       if (context.read<AuthProvider>().user != null) {
-        final chargeLevel = context.read<AuthProvider>().user!['chargeLevel'] ?? 0;
-        context.read<WalletProvider>().setBalance(chargeLevel as int);
+        final chargeLevel = context.read<AuthProvider>().user!['chargeLevel'];
+        context.read<WalletProvider>().setBalance((chargeLevel as num?)?.toInt() ?? 0);
       }
     });
   }
@@ -83,11 +83,13 @@ class _HomePage extends StatefulWidget {
 
 class _HomePageState extends State<_HomePage> {
   Future<void> _onRefresh() async {
-    await Future.wait([
-      context.read<RoomsProvider>().loadRooms(type: 'public'),
-      context.read<TasksProvider>().loadDailyTasks(),
-      context.read<MessagesProvider>().loadConversations(),
-    ]);
+    try {
+      await Future.wait([
+        context.read<RoomsProvider>().loadRooms(type: 'public'),
+        context.read<TasksProvider>().loadDailyTasks(),
+        context.read<MessagesProvider>().loadConversations(),
+      ]);
+    } catch (_) {}
   }
 
   @override
